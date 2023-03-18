@@ -1,0 +1,19 @@
+name: Bug Report
+description: File a bug report
+labels: ["Type: bug"]
+assignees: []
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug, including details regarding any error messages.
+      description: Please include what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: Describe the steps required to reproduce the bug.
+      description: Please provide the steps to reproduce the error.
+    validations:
+      required: true

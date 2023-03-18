@@ -1,0 +1,15 @@
+name: Enhancement Request
+description: Request a feature enhancement.
+labels: ["Type: enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to share your feature enhancement.
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the enhancement requested
+    validations:
+      required: true

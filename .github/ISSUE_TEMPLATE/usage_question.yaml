@@ -1,0 +1,17 @@
+name: Usage Question
+description: Ask a question
+labels: ["Type: usage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Thank you for your interest in the project. While we appreciate your question, please be patient
+        when waiting for someone to respond. We do not have anyone working full-time on this project.
+  - type: textarea
+    id: description
+    attributes:
+      label: > 
+        Describe the question you have. Please include as many details as you can.
+    validations:
+      required: true
