@@ -16,6 +16,9 @@ Record Attributes:
  that are defined by a COBOL Copybook.
  - A record can have a variable or fixed length.
  - A record could have a byte-prefix.
+ - A record may or may not be followed by a delimiter depending on if it's fixed or variable length.
+
+There can be multiple variations of the attributes listed above that impact how a file is structured.
 
 ## Project Status
 Currently the project is developing an early proto-type of copybook parser in rust.
