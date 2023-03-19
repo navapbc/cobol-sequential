@@ -1,4 +1,4 @@
-<!-- Edit And Past Into Pull Request Title
+<!-- Edit And Paste Into Pull Request Title
 Issue-<Github Issue Number>: PR Title
 -->
 
