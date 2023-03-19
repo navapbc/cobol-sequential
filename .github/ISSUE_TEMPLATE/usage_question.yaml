@@ -1,0 +1,16 @@
+name: Usage Question
+description: Ask a question
+labels: ["usage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Thank you for your interest in the project.
+  - type: textarea
+    id: description
+    attributes:
+      label: > 
+        Describe the question you have. Please include as many details and context as you can.
+    validations:
+      required: true
