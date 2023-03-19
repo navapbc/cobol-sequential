@@ -1,19 +1,25 @@
 name: Bug Report
-description: File a bug report
-labels: ["Type: bug"]
+description: Report a bug that you have found
+labels: ["bug"]
 assignees: []
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report the bug you found and make this project better.
+        Please fill out the sections below to help everyone understand the issue that you are
+        having.
   - type: textarea
     id: description
     attributes:
-      label: Describe the bug, including details regarding any error messages.
-      description: Please include what you expected.
+      label: Bug Description
+      description: Please include details, error logs, screenshots and what you expected to happen here.
     validations:
       required: true
   - type: textarea
     id: reproducer
     attributes:
-      label: Describe the steps required to reproduce the bug.
+      label: Reproducible Steps
       description: Please provide the steps to reproduce the error.
     validations:
       required: true

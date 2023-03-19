@@ -1,15 +1,43 @@
 name: Enhancement Request
 description: Request a feature enhancement.
-labels: ["Type: enhancement"]
+labels: ["enhancement"]
 assignees: []
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to share your feature enhancement.
+        Thank you for taking the time to share your feature request and make this project better. Please
+        fill out the sections below the best you can to help everyone understand what you are proposing.
   - type: textarea
     id: description
     attributes:
-      label: Describe the enhancement requested
+      label: Feature Description
+      description: Describe the feature that you are requesting.
+    validations:
+      required: true
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Please describe how this feature would be used
+    validations:
+      required: true
+  - type: dropdown
+    id: who-can-work-this
+    attributes:
+      label: Who can work this issue?
+      options:
+        - I want to implement this
+        - I want help implementing this
+        - I would like someone else to implement this
+    validations:
+      required: true
+  - type: dropdown
+    id: need-more-scoping
+    attributes:
+      label: Does this feature need more scoping or discussion?
+      options:
+        - Yes
+        - No
     validations:
       required: true
