@@ -1,6 +1,7 @@
 # Cobol Sequential
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 The Cobol Sequential project aims to provide a library for reading
 [COBOL sequential files](https://www.tutorialspoint.com/cobol/cobol_file_organization.htm)
 into the [Apache Arrow](https://github.com/apache/arrow) In-Memory data format. This will
