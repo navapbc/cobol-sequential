@@ -1,0 +1,28 @@
+# This workflow will lint markdown documents for consistency
+name: Markdown Linter
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Markdown Linting Action
+      uses: avto-dev/markdown-lint@v1.5.0
