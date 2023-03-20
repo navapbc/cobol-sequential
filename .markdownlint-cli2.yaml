@@ -1,11 +1,14 @@
 #
-# An example .markdownlint-cli2.yaml file
+# Configuration file for markdownlint-cli2. This file defines what rules to use when linting
+# markdown files. For more details see:
+#    https://github.com/DavidAnson/markdownlint
 #
 
-# Disable some built-in rules
+# Disables or enables rules
 config:
-  no-trailing-spaces: false
-  no-multiple-blanks: false
+  # Enables line-length rule to warn on lines longer than 100 characters
+  MD013:
+    line_length: 100
 
 # Fix any fixable errors
 fix: true
