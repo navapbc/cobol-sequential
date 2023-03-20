@@ -7,7 +7,7 @@ closes #
 
 ### Changes
 <!-- DESCRIBE THE CHANGES YOU ARE MAKING -->
-- 
+-
 
 ### Context For Reviewers
 <!-- WHY ARE YOU MAKING THIS CHANGE? -->
@@ -22,7 +22,7 @@ Include screenshots when applicable.
 ### Code Change CheckList
 <!-- This section can be removed if there are no code changes -->
 
- - [ ] Code runs without errors.
- - [ ] Added/Updated tests for feature.
- - [ ] fixed or suppressed any linting warnings.
- - [ ] Added relevant documentation to methods, classes, markdown.
+- [ ] Code runs without errors.
+- [ ] Added/Updated tests for feature.
+- [ ] fixed or suppressed any linting warnings.
+- [ ] Added relevant documentation to methods, classes, markdown.

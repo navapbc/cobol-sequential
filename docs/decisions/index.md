@@ -2,9 +2,11 @@
 
 This log lists the architectural decisions for cobol sequential.
 
-<!-- adrlog -- Regenerate the content by using "adr-log -i". You can install it via "npm install -g adr-log" -->
+<!-- adrlog -- Regenerate the content by using "adr-log -i". You can install it via "npm install -g
+adr-log" -->
 
-- [ADR-0000](0000-use-markdown-architectural-decision-records.md) - Use Markdown Architectural Decision Records
+- [ADR-0000](0000-use-markdown-architectural-decision-records.md) - Use Markdown Architectural
+Decision Records
 
 <!-- adrlogstop -->
 

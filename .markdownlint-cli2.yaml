@@ -9,6 +9,9 @@ config:
   # Enables line-length rule to warn on lines longer than 100 characters
   MD013:
     line_length: 100
+    # The spacing of the copybooks and the file examples makes it impractical to limit the length
+    # of the code blocks
+    code_blocks: false
 
 # Fix any fixable errors
 fix: true
@@ -18,8 +21,8 @@ fix: true
 #   - "!*bout.md"
 
 # Define glob expressions to ignore
-# ignores:
-#   - "ignore*.md"
+ignores:
+  - ".github/pull_request_template.md"
 
 # Disable inline config comments
 noInlineConfig: true
