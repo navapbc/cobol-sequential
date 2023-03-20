@@ -1,0 +1,22 @@
+#
+# An example .markdownlint-cli2.yaml file
+#
+
+# Disable some built-in rules
+config:
+  no-trailing-spaces: false
+  no-multiple-blanks: false
+
+# Fix any fixable errors
+fix: true
+
+# Define glob expressions to use (only valid at root)
+# globs:
+#   - "!*bout.md"
+
+# Define glob expressions to ignore
+# ignores:
+#   - "ignore*.md"
+
+# Disable inline config comments
+noInlineConfig: true
