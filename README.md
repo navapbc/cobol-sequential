@@ -36,6 +36,8 @@ Although, Apache Arrow may not be the final destination for your data, it can he
 ## Project Status
 Currently the project is developing an early proto-type of copybook parser in rust.
 
+After a basic copybook parser is implemented we will be able to start building the sequential file reader.
+
 ## Contributing
 See the [contributing guidelines](CONTRIBUTING.md)
 
