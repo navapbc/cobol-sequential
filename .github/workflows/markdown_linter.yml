@@ -3,7 +3,7 @@ name: Markdown Linter
 
 on:
   push:
-    branches: [ "main", "3/create-docs-folder" ]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
     paths:
