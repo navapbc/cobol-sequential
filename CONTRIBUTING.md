@@ -29,6 +29,15 @@ When making a change plase ensure that you use a pull request from your **own** 
 [feature branches](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow)
 for your changes.
 
+### Linting
+
+In order to enforce consistent style in our code and documentation we have linters hooked up to
+our CI. To help aid your local development it is useful to hook this linters into
+your IDE. See the list below for linters that can integrate with your IDE:
+
+- markdownlint-cli
+  - [VSCode: markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
+
 ### ✅Tests and Documentation are non-optional
 
 Don't forget to include new tests and documentation in every code contribution. This will help
@@ -43,6 +52,8 @@ note in the issue how involved you would like to be with development.
 
 The github issue will serve as a starting point for discussion and may lead to architecture decisions
 before implementation is started.
+
+When proposing a new architecture decision you should use the [MADR](https://adr.github.io/madr/) format.
 
 ## ❔Questions
 
