@@ -1,0 +1,4 @@
+
+# Cargo target directories
+target/**
+copybook-reader/target/**
