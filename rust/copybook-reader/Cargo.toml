@@ -1,8 +1,22 @@
 [package]
 name = "copybook-reader"
+description = "Parses Cobol Copybooks into rust objects."
+
+repository = "https://github.com/navapbc/cobol-sequential"
+license = "Apache-2.0"
+
 version = "0.1.0-snapshot"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+env_logger = "0.10.0"
+log = "0.4.17"
+lombok = "0.3.3"
+pest = "2.5.4"
+pest_derive = "2.5.4"
+
+[dev-dependencies]
+test-log = "0.2.11"
+test-case = "3.0.0"
