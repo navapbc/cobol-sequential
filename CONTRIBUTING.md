@@ -37,6 +37,10 @@ your IDE. See the list below for linters that can integrate with your IDE:
 
 - markdownlint-cli
   - [VSCode: markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
+- rust formatting
+  - [VSCode: rust.analyzer](https://rust-analyzer.github.io/)
+
+NOTE: If your IDE is not listed feel free to add a PR for a linter that works with your IDE
 
 ### ✅Tests and Documentation are non-optional
 
