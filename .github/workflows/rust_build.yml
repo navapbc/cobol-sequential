@@ -1,0 +1,58 @@
+# This workflow is responsible for compiling, testing, linting, and auditing the rust code
+name: Rust Build
+
+on:
+    push:
+        branches: ["main"]
+    pull_request:
+        branches: ["main"]
+        paths:
+            - 'rust/**'
+
+jobs:
+    Rust-Build:
+        runs-on: ubuntu-latest
+
+        defaults:
+            run:
+                working-directory: ./rust
+
+        steps:
+            - name: Check out repository code
+              uses: actions/checkout@v3
+
+            - name: Install Rust ToolChain
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  
+            - name: Install cargo-llvm-cov
+              uses: taiki-e/install-action@cargo-llvm-cov
+
+            - name: Compile Rust
+              run: | 
+                  cargo build
+
+            - name: Run Tests and Create Test Coverage Report
+              run: |
+                  cargo llvm-cov --all-features --workspace  --html
+
+            - name: Upload Test Coverage Report
+              uses: actions/upload-artifact@v3
+              with:
+                  name: llvm-test-coverage-report
+                  path: ${{ github.workspace }}/rust/target/llvm-cov/html
+                  retention-days: 5
+                  
+            - name: Verify Test Coverage > 90% (check the uploaded zip when this fails)
+              run: |
+                  cargo llvm-cov report --fail-under-lines 90
+
+            - name: Lint Rust
+              run: |
+                  cargo clippy
+                  cargo fmt --all -- --check
+
+            - name: Audit Rust Dependencies
+              run: |
+                  cargo audit
