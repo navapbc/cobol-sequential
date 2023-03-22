@@ -1,0 +1,2 @@
+       01 TRANSACTION-RECORD.
+           02 UID PIC X(5).
