@@ -1,4 +1,4 @@
-name: Enhancement Request
+name: Feature Request
 description: Request a feature enhancement.
 labels: ["enhancement"]
 assignees: []
@@ -37,7 +37,7 @@ body:
     attributes:
       label: Does this feature need more scoping or discussion?
       options:
-        - Yes
-        - No
+        - 'Yes'
+        - 'No'
     validations:
       required: true

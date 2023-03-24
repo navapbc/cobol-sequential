@@ -1,6 +1,6 @@
 name: Usage Question
 description: Ask a question
-labels: ["usage"]
+labels: ["question"]
 assignees: []
 body:
   - type: markdown
