@@ -28,7 +28,7 @@ Record Attributes:
 - A record may or may not be followed by a delimiter depending on if it's fixed or variable length.
 
 There can be multiple variations of the attributes listed above that impact how a file is
-structured.
+structured. You can find more detailed documentation on the file format [here](docs/file-format/README.md).
 
 ## Why Apache Arrow?
 
