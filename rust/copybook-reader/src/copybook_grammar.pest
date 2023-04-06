@@ -1,0 +1,42 @@
+whitespace = _{ " " }
+
+level = { 
+    ASCII_DIGIT+ 
+}
+
+label = {
+    // labels must start with at least one letter or number but they can be followed by
+    // any combination of letters, numbers, or dashes
+    ASCII_ALPHANUMERIC 
+    ~ (
+        ASCII_ALPHANUMERIC
+        | "-"
+      )*
+}
+
+data_type = {
+    ASCII_ALPHANUMERIC+ ~ "(" ~ ASCII_DIGIT ~ ")"
+}
+
+field = {
+    label ~ whitespace+ ~ data_type
+}
+
+group = {
+    label
+}
+
+statement = {
+    whitespace*
+    ~ level
+    ~ whitespace+
+    ~ (field | group)
+    ~ "."
+}
+
+file = {
+    SOI
+    ~ (statement ~ NEWLINE)+
+    ~ whitespace* // Some copybooks may have trailing whitespace
+    ~ EOI
+}
