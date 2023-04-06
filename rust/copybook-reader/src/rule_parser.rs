@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn pest_file_grammar_is_valid() {
-        let result = CopybookPestParser::parse(Rule::file, "01 FIELDNAME PIC(5).\n");
+        let result = CopybookPestParser::parse(Rule::file, "01 FIELDNAME PIC X(5).\n");
         assert!(result.is_ok());
     }
 
@@ -80,7 +80,7 @@ mod tests {
 
     #[test]
     fn should_parse_field_into_def() {
-        let result = CopybookPestParser::parse(Rule::field, "FIELDNAME PIC(5)");
+        let result = CopybookPestParser::parse(Rule::field, "FIELDNAME PIC X(5)");
         assert!(result.is_ok());
 
         let first_field_rule = result.unwrap().next().unwrap();
@@ -89,12 +89,12 @@ mod tests {
 
         assert_eq!(*field_definition.get_level(), 1u32);
         assert_eq!(field_definition.get_label(), "FIELDNAME");
-        assert_eq!(field_definition.get_data_type(), "PIC(5)");
+        assert_eq!(field_definition.get_data_type(), "PIC X(5)");
     }
 
-    #[test_case("FIELD-NAME PIC(5)"; "fieldnames support dashes")]
-    #[test_case("FILLER01 PIC(5)"; "fieldnames support numbers")]
-    #[test_case("fILLer PIC(5)"; "fieldnames upper and lower case")]
+    #[test_case("FIELD-NAME PIC X(5)"; "fieldnames support dashes")]
+    #[test_case("FILLER01 PIC X(5)"; "fieldnames support numbers")]
+    #[test_case("fILLer PIC X(5)"; "fieldnames upper and lower case")]
     fn should_parse_fieldnames(copybook_str: &str) {
         let result = CopybookPestParser::parse(Rule::field, copybook_str);
         assert!(result.is_ok());
@@ -102,7 +102,7 @@ mod tests {
 
     #[test]
     fn should_parse_statement_into_field_def() {
-        let result = CopybookPestParser::parse(Rule::statement, "01 FIELDNAME PIC(5).\n");
+        let result = CopybookPestParser::parse(Rule::statement, "01 FIELDNAME PIC X(5).\n");
         assert!(result.is_ok());
 
         let statement_definition = statement_rule_into_definition(result.unwrap().next().unwrap());

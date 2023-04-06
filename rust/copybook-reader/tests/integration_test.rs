@@ -11,6 +11,10 @@ fn get_copybook_directory() -> String {
     )
 }
 
+
+//TODO test simple copybook files
+//[test_case("one_group_field.cpy"; "fieldnames upper and lower case")]
+
 #[test]
 fn first_test() {
     let copybook_str = fs::read_to_string(format!(
@@ -21,15 +25,14 @@ fn first_test() {
     .unwrap();
     let parse_result = copybook_reader::parse(&copybook_str);
     let is_ok = parse_result.is_ok();
-    // println!("{:?}", parse_result.err());
+    println!("{:?}", parse_result.err());
 
-    // TODO Currently the parser does not support PIC X(5) data types
-    assert!(!is_ok);
+    assert!(is_ok);
 }
 
 #[test]
 fn should_parse_pic_field() {
-    let parse_result = copybook_reader::parse("01 FIELDNAME PIC(5).\n");
+    let parse_result = copybook_reader::parse("01 FIELDNAME PIC X(5).\n");
 
     match parse_result {
         Ok(copybook_definition) => {
@@ -46,7 +49,7 @@ fn should_parse_pic_field() {
                 copybook::StatementDefinition::FieldDefinition(def) => {
                     assert!(*def.get_level() == 1u32);
                     assert!(def.get_label() == "FIELDNAME");
-                    assert!(def.get_data_type() == "PIC(5)");
+                    assert!(def.get_data_type() == "PIC X(5)");
                 }
                 copybook::StatementDefinition::GroupDefinition(_) => unreachable!(),
             }

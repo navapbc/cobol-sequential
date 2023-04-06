@@ -50,7 +50,7 @@ mod rule_parser;
 /// # Example
 ///
 /// ```
-/// let copybook = "01 FIELDNAME PIC(5).\n";
+/// let copybook = "01 FIELDNAME PIC X(5).\n";
 /// let copybook_definition = copybook_reader::parse(copybook).ok().unwrap();
 ///
 /// assert_eq!(copybook_definition.get_groups().len(), 1);
@@ -230,7 +230,7 @@ mod tests {
 
     #[test]
     fn should_parse_pic_field() {
-        let parse_result = parse("01 FIELDNAME PIC(5).\n");
+        let parse_result = parse("01 FIELDNAME PIC X(5).\n");
 
         match parse_result {
             Ok(copybook_definition) => {
@@ -242,7 +242,7 @@ mod tests {
                             copybook::FieldDefinition::new(
                                 1u32,
                                 String::from("FIELDNAME"),
-                                String::from("PIC(5)"),
+                                String::from("PIC X(5)"),
                             ),
                         )],
                     ),
@@ -259,8 +259,8 @@ mod tests {
         let parse_result = parse(
             "\
         01 GROUPNAME.
-            05 FIRSTFIELD PIC(5).
-            05 SECONDFIELD PIC(5).
+            05 FIRSTFIELD PIC X(5).
+            05 SECONDFIELD PIC X(5).
         ",
         );
 
@@ -275,14 +275,14 @@ mod tests {
                                 copybook::FieldDefinition::new(
                                     5u32,
                                     String::from("FIRSTFIELD"),
-                                    String::from("PIC(5)"),
+                                    String::from("PIC X(5)"),
                                 ),
                             ),
                             copybook::StatementDefinition::FieldDefinition(
                                 copybook::FieldDefinition::new(
                                     5u32,
                                     String::from("SECONDFIELD"),
-                                    String::from("PIC(5)"),
+                                    String::from("PIC X(5)"),
                                 ),
                             ),
                         ],
@@ -300,13 +300,13 @@ mod tests {
         let parse_result = parse(
             "\
         01 GROUPONE.
-            05 FIRSTFIELD PIC(5).
-            05 SECONDFIELD PIC(5).
+            05 FIRSTFIELD PIC X(5).
+            05 SECONDFIELD PIC X(5).
             05 GROUPTWO.
-                10 THIRDFIELD PIC(1).
-            05 FOURTHFIELD PIC(1).
+                10 THIRDFIELD PIC X(1).
+            05 FOURTHFIELD PIC X(1).
         01 GROUPTHREE.
-            05 FIFTHFIELD PIC(9).
+            05 FIFTHFIELD PIC X(9).
         ",
         );
 
@@ -321,14 +321,14 @@ mod tests {
                                 copybook::FieldDefinition::new(
                                     5u32,
                                     String::from("FIRSTFIELD"),
-                                    String::from("PIC(5)"),
+                                    String::from("PIC X(5)"),
                                 ),
                             ),
                             copybook::StatementDefinition::FieldDefinition(
                                 copybook::FieldDefinition::new(
                                     5u32,
                                     String::from("SECONDFIELD"),
-                                    String::from("PIC(5)"),
+                                    String::from("PIC X(5)"),
                                 ),
                             ),
                             copybook::StatementDefinition::GroupDefinition(
@@ -339,7 +339,7 @@ mod tests {
                                         copybook::FieldDefinition::new(
                                             10u32,
                                             String::from("THIRDFIELD"),
-                                            String::from("PIC(1)"),
+                                            String::from("PIC X(1)"),
                                         ),
                                     )],
                                 ),
@@ -348,7 +348,7 @@ mod tests {
                                 copybook::FieldDefinition::new(
                                     5u32,
                                     String::from("FOURTHFIELD"),
-                                    String::from("PIC(1)"),
+                                    String::from("PIC X(1)"),
                                 ),
                             ),
                         ],
@@ -360,7 +360,7 @@ mod tests {
                             copybook::FieldDefinition::new(
                                 5u32,
                                 String::from("FIFTHFIELD"),
-                                String::from("PIC(9)"),
+                                String::from("PIC X(9)"),
                             ),
                         )],
                     ),
@@ -377,9 +377,9 @@ mod tests {
             "\
         01 GROUPONE.
             05 GROUPTWO.
-                10 FIRSTFIELD PIC(5).
+                10 FIRSTFIELD PIC X(5).
         01 GROUPTHREE.
-            05 SECONDFIELD PIC(9).
+            05 SECONDFIELD PIC X(9).
         ",
         );
 
@@ -396,7 +396,7 @@ mod tests {
         let parse_result = parse(
             "\
             01 GROUPONE.
-            05 FIRSTFIELD PIC(5).
+            05 FIRSTFIELD PIC X(5).
             ",
         );
 
@@ -410,7 +410,7 @@ mod tests {
                             copybook::FieldDefinition::new(
                                 5u32,
                                 String::from("FIRSTFIELD"),
-                                String::from("PIC(5)"),
+                                String::from("PIC X(5)"),
                             ),
                         )],
                     ),

@@ -15,7 +15,7 @@ label = {
 }
 
 data_type = {
-    ASCII_ALPHANUMERIC+ ~ "(" ~ ASCII_DIGIT ~ ")"
+    "PIC " ~ ASCII_ALPHANUMERIC+ ~ "(" ~ ASCII_DIGIT ~ ")"
 }
 
 field = {
@@ -36,7 +36,10 @@ statement = {
 
 file = {
     SOI
-    ~ (statement ~ NEWLINE)+
+    ~ (
+        statement
+        ~ NEWLINE?
+      )+
     ~ whitespace* // Some copybooks may have trailing whitespace
     ~ EOI
 }
