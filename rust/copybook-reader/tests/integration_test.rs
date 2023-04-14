@@ -1,5 +1,6 @@
 use copybook_reader;
 use copybook_reader::copybook;
+use parameterized::parameterized;
 use std::env;
 use std::fs;
 
@@ -11,23 +12,27 @@ fn get_copybook_directory() -> String {
     )
 }
 
-
-//TODO test simple copybook files
-//[test_case("one_group_field.cpy"; "fieldnames upper and lower case")]
-
-#[test]
-fn first_test() {
-    let copybook_str = fs::read_to_string(format!(
-        "{}{}",
-        get_copybook_directory(),
-        "one_group_field.cpy"
-    ))
-    .unwrap();
+#[parameterized(filename = {
+    "one_group_field.cpy",
+    "one_field.cpy",
+    // FIXME: These copybooks are not yet supported
+    // "types.cpy",
+    // "complex.cpy",
+    // "line_numbers.cpy",
+    // "program.cbl"
+})]
+fn test_copybook_files(filename: &str) {
+    let copybook_str =
+        fs::read_to_string(format!("{}{}", get_copybook_directory(), filename)).unwrap();
     let parse_result = copybook_reader::parse(&copybook_str);
-    let is_ok = parse_result.is_ok();
-    println!("{:?}", parse_result.err());
 
-    assert!(is_ok);
+    match parse_result {
+        Ok(_) => assert!(true),
+        Err(parse_error) => {
+            println!("{}", parse_error);
+            unreachable!();
+        }
+    }
 }
 
 #[test]

@@ -62,7 +62,7 @@ pub fn parse(
     if result.is_err() {
         let error = result.err().unwrap();
         log::error!("pest grammar parse error: {error:?}");
-        return Err(copybook::CopybookParseError::new(error));
+        return Err(copybook::CopybookParseError::new(error.as_ref()));
     }
 
     let file = result.unwrap().next().unwrap();

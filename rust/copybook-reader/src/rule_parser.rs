@@ -53,6 +53,20 @@ pub fn string_into_file_rule(copybook_str: &str) -> Result<Pairs<Rule>, Box<Erro
     }
 }
 
+pub fn map_rule_to_name(rule: &Rule) -> &'static str {
+    match rule {
+        Rule::EOI => "EOI",
+        Rule::whitespace => "whitespace",
+        Rule::level => "level",
+        Rule::label => "label",
+        Rule::data_type => "data_type",
+        Rule::field => "field",
+        Rule::group => "group",
+        Rule::statement => "statement",
+        Rule::file => "file",
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
