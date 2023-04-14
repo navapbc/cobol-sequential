@@ -54,7 +54,7 @@ mod rule_parser;
 /// let copybook = "01 FIELDNAME PIC X(5).\n";
 /// let copybook_definition = copybook_reader::parse(copybook).ok().unwrap();
 ///
-/// assert_eq!(copybook_definition.get_groups().len(), 1);
+/// assert_eq!(copybook_definition.get_statements().len(), 1);
 /// ```
 pub fn parse(
     copybook_str: &str,
@@ -92,8 +92,9 @@ pub fn parse(
                 log::debug!("Reached End Of Input");
 
                 while let Some(group) = group_stack.pop_back() {
-                    log::debug!("Pop Group from Stack Onto Copybook {:?}", group.get_label());
-                    copybook_definition.add_group(group);
+                    log::debug!("Pop Group from Stack Onto Copybook");
+                    copybook_definition
+                        .add_statement(copybook::StatementDefinition::GroupDefinition(group));
                 }
             }
             _ => unreachable!(),
@@ -110,22 +111,15 @@ fn place_new_field(
     let mut current_group = group_stack.pop_back();
     match current_group.as_mut() {
         None => {
-            // When the top level in the copybook is a field we will create
-            // a GroupDefinition that just contains a single field.
             log::debug!(
-                "Add new Field {:?} as Group to Copybook",
+                "Add new Field {:?} as Statement to Copybook",
                 new_field.get_label()
             );
 
-            let mut new_group = copybook::GroupDefinition::new(
-                *new_field.get_level(),
-                new_field.get_label().to_owned(),
-            );
-            new_group.add_statement(copybook::StatementDefinition::FieldDefinition(new_field));
-
-            // We can add the new group to the copybook definition since there won't be
+            // We can add the new field to the copybook definition as a statement since there won't be
             // any more groups or fields added to it.
-            copybook_definition.add_group(new_group);
+            copybook_definition
+                .add_statement(copybook::StatementDefinition::FieldDefinition(new_field));
         }
         Some(group) => {
             if new_field.get_level() > group.get_level() {
@@ -142,7 +136,7 @@ fn place_new_field(
                 // group has terminated and the current field belongs to a previous group.
                 let prev_group = group_stack.back_mut().unwrap();
                 log::debug!(
-                    "Add current Group {:?} as LineDefinition to Previous Group {:?}",
+                    "Add current Group {:?} as StatementDefinition to Previous Group {:?}",
                     group.get_label(),
                     prev_group.get_label()
                 );
@@ -151,8 +145,8 @@ fn place_new_field(
                     current_group.unwrap(),
                 ));
 
-                //re-evaluate now that the current group has been merged with the previous group
-                // on the stack
+                //re-evaluate where the new field should go now that the current group has
+                // been merged with the previous group on the stack.
                 place_new_field(new_field, group_stack, copybook_definition);
             }
         }
@@ -177,11 +171,15 @@ fn place_new_group(
                 }
                 Ordering::Equal => {
                     log::debug!(
-                        "Add current gorup {:?} to copybook and push new group to stack {:?}",
+                        "Add current group {:?} to copybook and push new group to stack {:?}",
                         group.get_label(),
                         new_group.get_label()
                     );
-                    copybook_definition.add_group(group_stack.pop_back().unwrap());
+                    copybook_definition.add_statement(
+                        copybook::StatementDefinition::GroupDefinition(
+                            group_stack.pop_back().unwrap(),
+                        ),
+                    );
                     group_stack.push_back(new_group);
                 }
                 Ordering::Less => {
@@ -196,7 +194,7 @@ fn place_new_group(
                         copybook::StatementDefinition::GroupDefinition(current_group),
                     );
 
-                    // re-evalutate the new group with the updated stack
+                    // re-evalutate where the new group should be placed with the updated stack
                     place_new_group(new_group, group_stack, copybook_definition);
                 }
             }
@@ -216,20 +214,13 @@ mod tests {
 
         match parse_result {
             Ok(copybook_definition) => {
-                let expected_copybook = copybook::CopybookDefinition::create_with_groups(vec![
-                    copybook::GroupDefinition::create_with_statements(
+                let expected_copybook = copybook::CopybookDefinition::create_with_statements(vec![
+                    copybook::StatementDefinition::FieldDefinition(copybook::FieldDefinition::new(
                         1u32,
                         String::from("FIELDNAME"),
-                        vec![copybook::StatementDefinition::FieldDefinition(
-                            copybook::FieldDefinition::new(
-                                1u32,
-                                String::from("FIELDNAME"),
-                                String::from("PIC X(5)"),
-                            ),
-                        )],
-                    ),
+                        String::from("PIC X(5)"),
+                    )),
                 ]);
-
                 assert_eq!(copybook_definition, expected_copybook);
             }
             Err(_) => unreachable!(),
@@ -248,26 +239,28 @@ mod tests {
 
         match parse_result {
             Ok(copybook_def) => {
-                let expected_copybook = copybook::CopybookDefinition::create_with_groups(vec![
-                    copybook::GroupDefinition::create_with_statements(
-                        1u32,
-                        String::from("GROUPNAME"),
-                        vec![
-                            copybook::StatementDefinition::FieldDefinition(
-                                copybook::FieldDefinition::new(
-                                    5u32,
-                                    String::from("FIRSTFIELD"),
-                                    String::from("PIC X(5)"),
+                let expected_copybook = copybook::CopybookDefinition::create_with_statements(vec![
+                    copybook::StatementDefinition::GroupDefinition(
+                        copybook::GroupDefinition::create_with_statements(
+                            1u32,
+                            String::from("GROUPNAME"),
+                            vec![
+                                copybook::StatementDefinition::FieldDefinition(
+                                    copybook::FieldDefinition::new(
+                                        5u32,
+                                        String::from("FIRSTFIELD"),
+                                        String::from("PIC X(5)"),
+                                    ),
                                 ),
-                            ),
-                            copybook::StatementDefinition::FieldDefinition(
-                                copybook::FieldDefinition::new(
-                                    5u32,
-                                    String::from("SECONDFIELD"),
-                                    String::from("PIC X(5)"),
+                                copybook::StatementDefinition::FieldDefinition(
+                                    copybook::FieldDefinition::new(
+                                        5u32,
+                                        String::from("SECONDFIELD"),
+                                        String::from("PIC X(5)"),
+                                    ),
                                 ),
-                            ),
-                        ],
+                            ],
+                        ),
                     ),
                 ]);
 
@@ -294,57 +287,61 @@ mod tests {
 
         match parse_result {
             Ok(copybook_def) => {
-                let expected_copybook = copybook::CopybookDefinition::create_with_groups(vec![
-                    copybook::GroupDefinition::create_with_statements(
-                        1u32,
-                        String::from("GROUPONE"),
-                        vec![
-                            copybook::StatementDefinition::FieldDefinition(
-                                copybook::FieldDefinition::new(
-                                    5u32,
-                                    String::from("FIRSTFIELD"),
-                                    String::from("PIC X(5)"),
+                let expected_copybook = copybook::CopybookDefinition::create_with_statements(vec![
+                    copybook::StatementDefinition::GroupDefinition(
+                        copybook::GroupDefinition::create_with_statements(
+                            1u32,
+                            String::from("GROUPONE"),
+                            vec![
+                                copybook::StatementDefinition::FieldDefinition(
+                                    copybook::FieldDefinition::new(
+                                        5u32,
+                                        String::from("FIRSTFIELD"),
+                                        String::from("PIC X(5)"),
+                                    ),
                                 ),
-                            ),
-                            copybook::StatementDefinition::FieldDefinition(
-                                copybook::FieldDefinition::new(
-                                    5u32,
-                                    String::from("SECONDFIELD"),
-                                    String::from("PIC X(5)"),
+                                copybook::StatementDefinition::FieldDefinition(
+                                    copybook::FieldDefinition::new(
+                                        5u32,
+                                        String::from("SECONDFIELD"),
+                                        String::from("PIC X(5)"),
+                                    ),
                                 ),
-                            ),
-                            copybook::StatementDefinition::GroupDefinition(
-                                copybook::GroupDefinition::create_with_statements(
-                                    5u32,
-                                    String::from("GROUPTWO"),
-                                    vec![copybook::StatementDefinition::FieldDefinition(
-                                        copybook::FieldDefinition::new(
-                                            10u32,
-                                            String::from("THIRDFIELD"),
-                                            String::from("PIC X(1)"),
-                                        ),
-                                    )],
+                                copybook::StatementDefinition::GroupDefinition(
+                                    copybook::GroupDefinition::create_with_statements(
+                                        5u32,
+                                        String::from("GROUPTWO"),
+                                        vec![copybook::StatementDefinition::FieldDefinition(
+                                            copybook::FieldDefinition::new(
+                                                10u32,
+                                                String::from("THIRDFIELD"),
+                                                String::from("PIC X(1)"),
+                                            ),
+                                        )],
+                                    ),
                                 ),
-                            ),
-                            copybook::StatementDefinition::FieldDefinition(
-                                copybook::FieldDefinition::new(
-                                    5u32,
-                                    String::from("FOURTHFIELD"),
-                                    String::from("PIC X(1)"),
+                                copybook::StatementDefinition::FieldDefinition(
+                                    copybook::FieldDefinition::new(
+                                        5u32,
+                                        String::from("FOURTHFIELD"),
+                                        String::from("PIC X(1)"),
+                                    ),
                                 ),
-                            ),
-                        ],
+                            ],
+                        ),
                     ),
-                    copybook::GroupDefinition::create_with_statements(
-                        1u32,
-                        String::from("GROUPTHREE"),
-                        vec![copybook::StatementDefinition::FieldDefinition(
-                            copybook::FieldDefinition::new(
-                                5u32,
-                                String::from("FIFTHFIELD"),
-                                String::from("PIC X(9)"),
-                            ),
-                        )],
+                    copybook::StatementDefinition::GroupDefinition(
+                        copybook::GroupDefinition::create_with_statements(
+                            1u32,
+                            String::from("GROUPTHREE"),
+                            vec![copybook::StatementDefinition::FieldDefinition(
+                                copybook::FieldDefinition::new(
+                                    5u32,
+                                    String::from("FIFTHFIELD"),
+                                    String::from("PIC X(9)"),
+                                ),
+                            )],
+                        ),
                     ),
                 ]);
                 assert_eq!(copybook_def, expected_copybook);
@@ -367,7 +364,7 @@ mod tests {
 
         match parse_result {
             Ok(copybook_def) => {
-                assert_eq!(copybook_def.get_groups().len(), 2);
+                assert_eq!(copybook_def.get_statements().len(), 2);
             }
             Err(_) => unreachable!(),
         }
@@ -384,17 +381,19 @@ mod tests {
 
         match parse_result {
             Ok(copybook_def) => {
-                let expected_copybook = copybook::CopybookDefinition::create_with_groups(vec![
-                    copybook::GroupDefinition::create_with_statements(
-                        1u32,
-                        String::from("GROUPONE"),
-                        vec![copybook::StatementDefinition::FieldDefinition(
-                            copybook::FieldDefinition::new(
-                                5u32,
-                                String::from("FIRSTFIELD"),
-                                String::from("PIC X(5)"),
-                            ),
-                        )],
+                let expected_copybook = copybook::CopybookDefinition::create_with_statements(vec![
+                    copybook::StatementDefinition::GroupDefinition(
+                        copybook::GroupDefinition::create_with_statements(
+                            1u32,
+                            String::from("GROUPONE"),
+                            vec![copybook::StatementDefinition::FieldDefinition(
+                                copybook::FieldDefinition::new(
+                                    5u32,
+                                    String::from("FIRSTFIELD"),
+                                    String::from("PIC X(5)"),
+                                ),
+                            )],
+                        ),
                     ),
                 ]);
                 assert_eq!(copybook_def, expected_copybook);
