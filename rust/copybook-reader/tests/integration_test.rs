@@ -27,7 +27,10 @@ fn test_copybook_files(filename: &str) {
     let parse_result = copybook_reader::parse(&copybook_str);
 
     match parse_result {
-        Ok(_) => assert!(true),
+        Ok(copybook) => {
+            println!("{}", copybook);
+            assert!(true)
+        },
         Err(parse_error) => {
             println!("{}", parse_error);
             unreachable!();

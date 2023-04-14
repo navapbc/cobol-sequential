@@ -211,22 +211,7 @@ mod tests {
 
     //TODO refactor parser to struct
     //TODO fix newline logic
-    //TODO print copybook def
     //TODO should the top level of the CopybookDefinition be a Statement? instead of a group
-
-    // Helper function to log the contents of the CopybookDefinition
-    #[allow(dead_code)]
-    fn log_copybook_groups(copybook_definition: &CopybookDefinition) {
-        // NOTE: you may need to rerun tests with RUST_LOG="debug" to see this
-        log::debug!("");
-        log::debug!("");
-        log::debug!("==== Copybook Definition Groups =====");
-        for group in copybook_definition.get_groups() {
-            log::debug!("Group: {group:?}");
-            log::debug!("");
-        }
-        log::debug!("====================================");
-    }
 
     #[test]
     fn should_parse_pic_field() {

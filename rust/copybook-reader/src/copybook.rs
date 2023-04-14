@@ -36,6 +36,16 @@ impl PartialEq for CopybookDefinition {
     }
 }
 
+impl fmt::Display for CopybookDefinition {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let _ = write!(f, "{}", "CopybookDefinition:\n");
+        for group in self.get_groups() {
+            let _ = write!(f, "{}\n", group);
+        }
+        write!(f, "{}", "\n")
+    }
+}
+
 /// The [GroupDefinition] defines a group of related fields in the copybook.
 /// These fields are typically grouped within the copybook by their level. For example,
 /// this group of copybook fields would be parsed into a single group definition where `01`
@@ -77,7 +87,7 @@ impl GroupDefinition {
         GroupDefinition {
             level,
             label,
-            statements,
+            statements
         }
     }
 
@@ -105,11 +115,30 @@ impl PartialEq for GroupDefinition {
     }
 }
 
+impl fmt::Display for GroupDefinition {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let _ = write!(f, "GroupDefinition level={}, label={}:\n", self.get_level(), self.get_label());
+        for statement in self.get_statements() {
+            let _ = write!(f, "{}\n", statement);
+        }
+        write!(f, "GroupDefinition End level={} label={}", self.get_level(), self.get_label())
+    }
+}
+
 /// A StatementDefinition can either be a [FieldDefinition] or a [GroupDefinition].
 #[derive(Debug, PartialEq)]
 pub enum StatementDefinition {
     GroupDefinition(GroupDefinition),
     FieldDefinition(FieldDefinition),
+}
+
+impl fmt::Display for StatementDefinition {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            StatementDefinition::GroupDefinition(group) => write!(f, "{}", group),
+            StatementDefinition::FieldDefinition(field) => write!(f, "{}", field),
+        }
+    }
 }
 
 /// A FieldDefinition defines a copybook field.
@@ -119,6 +148,12 @@ pub struct FieldDefinition {
     level: u32,
     label: String,
     data_type: String, //TODO should be an enum
+}
+
+impl fmt::Display for FieldDefinition {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "FieldDefinition level={}, label={}, dataType={}", self.get_level(), self.get_label(), self.get_data_type())
+    }
 }
 
 /// A CopybookParseError can occurr when the provided copybook does not match the expected grammar.
