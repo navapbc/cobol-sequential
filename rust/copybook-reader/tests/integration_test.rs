@@ -30,7 +30,7 @@ fn test_copybook_files(filename: &str) {
         Ok(copybook) => {
             println!("{}", copybook);
             assert!(true)
-        },
+        }
         Err(parse_error) => {
             println!("{}", parse_error);
             unreachable!();

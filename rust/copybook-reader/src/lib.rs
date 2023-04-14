@@ -39,6 +39,7 @@ use copybook::{CopybookDefinition, FieldDefinition, GroupDefinition};
 use crate::rule_parser::Rule;
 
 pub mod copybook;
+pub mod parse_errors;
 mod rule_parser;
 
 /// Parses string containing a copybook into a [copybook::CopybookDefinition].
@@ -57,12 +58,12 @@ mod rule_parser;
 /// ```
 pub fn parse(
     copybook_str: &str,
-) -> Result<copybook::CopybookDefinition, copybook::CopybookParseError> {
+) -> Result<copybook::CopybookDefinition, parse_errors::CopybookParseError> {
     let result = rule_parser::string_into_file_rule(copybook_str);
     if result.is_err() {
         let error = result.err().unwrap();
         log::error!("pest grammar parse error: {error:?}");
-        return Err(copybook::CopybookParseError::new(error.as_ref()));
+        return Err(parse_errors::CopybookParseError::new(error.as_ref()));
     }
 
     let file = result.unwrap().next().unwrap();
@@ -208,10 +209,6 @@ mod tests {
     use super::*;
 
     use test_log::test;
-
-    //TODO refactor parser to struct
-    //TODO fix newline logic
-    //TODO should the top level of the CopybookDefinition be a Statement? instead of a group
 
     #[test]
     fn should_parse_pic_field() {
