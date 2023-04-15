@@ -26,6 +26,9 @@
 //!             02 START-BALANCE PIC 9(6)V9(2).
 //!             02 END-BALANCE PIC 9(6)V9(2).
 //! ```
+//! 
+//! # Reading a Copybook
+//! The [parse] method provides a convenient way to read a COBOL copybook into the [copybook::CopybookDefinition].
 //!
 
 extern crate pest;
@@ -51,10 +54,36 @@ mod rule_parser;
 /// # Example
 ///
 /// ```
-/// let copybook = "01 FIELDNAME PIC X(5).\n";
+/// use copybook_reader::copybook::*;
+/// 
+/// let copybook = "01 RECORD.
+///                     02 FIRST-FIELD PIC X(5).
+///                     02 SECOND-FIELD PIC X(5).";
 /// let copybook_definition = copybook_reader::parse(copybook).ok().unwrap();
 ///
-/// assert_eq!(copybook_definition.get_statements().len(), 1);
+/// // Copybook definitions can be displayed easily by printing.
+/// print!("{}", copybook_definition);
+/// 
+/// 
+/// assert_eq!(copybook_definition,
+/// CopybookDefinition::create_with_statements(vec![
+///     StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
+///         1u32,
+///         String::from("RECORD"),
+///         vec![
+///             StatementDefinition::FieldDefinition(FieldDefinition::new(
+///                 2u32,
+///                 String::from("FIRST-FIELD"),
+///                 String::from("PIC X(5)"),
+///             )),
+///             StatementDefinition::FieldDefinition(FieldDefinition::new(
+///                 2u32,
+///                 String::from("SECOND-FIELD"),
+///                 String::from("PIC X(5)"),
+///             )),
+///         ],
+///     )),
+/// ]));
 /// ```
 pub fn parse(
     copybook_str: &str,

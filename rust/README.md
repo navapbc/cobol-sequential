@@ -22,10 +22,11 @@ Test the project with
 cargo test
 ```
 
-## Rust Documentation
+## Rust Crate Documentation
 
 Cargo will generate html documentation based on the inline comments found in the rust code. To
-view the rust documentation check the `target/doc/` folder after running the command:
+view the rust documentation check the `target/doc/copybook_reader/index.html` folder after running
+the command:
 
 ```bash
 cargo doc

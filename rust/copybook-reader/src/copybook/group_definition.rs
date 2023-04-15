@@ -4,7 +4,7 @@ use std::fmt;
 use super::statement_definition::StatementDefinition;
 
 /// The [GroupDefinition] defines a group of related fields in the copybook.
-/// These fields are typically grouped within the copybook by their level. For example,
+/// Fields are grouped within the copybook by their level. For example,
 /// this group of copybook fields would be parsed into a single group definition where `01`
 /// is the level,`TRANSACTION-RECORD` is the GroupDefinition label, and the fields UID and
 /// DESC would make up the statements in the GroupDefinition.
@@ -23,7 +23,7 @@ use super::statement_definition::StatementDefinition;
 ///         03 ACCOUNT-ID PIC 9(7).
 ///         03 ACCOUNT-HOLDER PIC X(50).
 /// ```
-/// [StatementDefinition]s are stored in the same order they exist in the copybook.
+/// [StatementDefinition]s are always stored in the same order that they exist in the copybook.
 #[derive(Getter, Debug)]
 pub struct GroupDefinition {
     level: u32,
@@ -49,7 +49,7 @@ impl GroupDefinition {
     }
 
     /// Adds a new [StatementDefinition] to the existing [GroupDefinition].
-    /// Keep in mind that a [StatementDefinition] can contain either a [FieldDefinition]
+    /// Keep in mind that a [StatementDefinition] can contain either a FieldDefinition
     /// or another [GroupDefinition].
     pub fn add_statement(&mut self, statement_definition: StatementDefinition) {
         self.statements.push(statement_definition);
