@@ -132,6 +132,17 @@ pub fn parse(
     Ok(copybook_definition)
 }
 
+/// Processes a newly discovered field and places it either on the group_stack or copybook_definition.
+/// This method can be called recursively whenever the stack needs to be resturctured before
+/// adding the field.
+///
+/// # Arguments:
+///
+///  * `new_field`   - newly discovered [FieldDefinition] that needs to processed.
+///  * `group_stack` - mutable reference to a stack of groups that are not ready to be added to the
+///      copybook definition yet.
+///  * `copybook_definiton` - mutable reference to the CopybookDefinition. Should only contain fully
+///      processed statements.
 fn place_new_field(
     new_field: FieldDefinition,
     group_stack: &mut VecDeque<GroupDefinition>,
@@ -202,6 +213,17 @@ fn place_new_field(
     }
 }
 
+/// Processes a newly discovered group and places it either on the group_stack or copybook_definition.
+/// This method can be called recursively whenever the stack needs to be resturctured before
+/// adding the group.
+///
+/// # Arguments:
+///
+///  * `new_field`   - newly discovered [FieldDefinition] that needs to processed.
+///  * `group_stack` - mutable reference to a stack of groups that are not ready to be added to the
+///      copybook definition yet.
+///  * `copybook_definiton` - mutable reference to the CopybookDefinition. Should only contain fully
+///      processed statements.
 fn place_new_group(
     new_group: GroupDefinition,
     group_stack: &mut VecDeque<GroupDefinition>,

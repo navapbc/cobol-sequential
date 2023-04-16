@@ -71,7 +71,7 @@ pub fn map_rule_to_name(rule: &Rule) -> &'static str {
 mod tests {
 
     use super::*;
-    use test_case::test_case;
+    use parameterized::parameterized;
 
     #[test]
     fn pest_file_grammar_is_valid() {
@@ -106,9 +106,11 @@ mod tests {
         assert_eq!(field_definition.get_data_type(), "PIC X(5)");
     }
 
-    #[test_case("FIELD-NAME PIC X(5)"; "fieldnames support dashes")]
-    #[test_case("FILLER01 PIC X(5)"; "fieldnames support numbers")]
-    #[test_case("fILLer PIC X(5)"; "fieldnames upper and lower case")]
+    #[parameterized(copybook_str = {
+        "FIELD-NAME PIC X(5)", // fieldnames should support dashes
+        "FILLER01 PIC X(5)",   // fieldnames should support numbers
+        "fILLer PIC X(5)",     // fieldnames should be case insensitive
+    })]
     fn should_parse_fieldnames(copybook_str: &str) {
         let result = CopybookPestParser::parse(Rule::field, copybook_str);
         assert!(result.is_ok());
