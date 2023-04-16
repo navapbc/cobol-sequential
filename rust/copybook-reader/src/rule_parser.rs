@@ -53,7 +53,6 @@ pub fn string_into_file_rule(copybook_str: &str) -> Result<Pairs<Rule>, Box<Erro
     }
 }
 
-#[no_coverage] // testing no_coverage option
 pub fn map_rule_to_name(rule: &Rule) -> &'static str {
     match rule {
         Rule::EOI => "EOI",

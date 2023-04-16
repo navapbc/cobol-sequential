@@ -1,4 +1,3 @@
-#![feature(no_coverage)]
 //! copybook-reader
 //!
 //! The CopybookReader library is designed to parse COBOL Copybooks into an Intermediary Representation
