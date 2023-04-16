@@ -5,7 +5,7 @@ use std::fmt;
 /// A CopybookParseError can occur when the provided copybook does not match the expected grammar in
 /// which case this error may be returned. This struct contains some useful information to help
 /// understand which token was not able to be parsed and what token was expected.
-/// 
+///
 /// # Example
 /// ```
 /// // This copybook is invalid because it is missing a period at the end of the first line.
@@ -16,11 +16,10 @@ use std::fmt;
 ///
 /// // The error can be printed
 /// print!("{}", copybook_parse_error);
-/// 
+///
 /// assert_eq!(copybook_parse_error.get_message(), "Failed to parse copybook on Line 1, Column 4. Expected a field token but found \"RECORD\"");
 /// ```
 pub struct CopybookParseError {
-
     // Line number in the copybook that caused the error.
     line_number: usize,
 
@@ -30,7 +29,7 @@ pub struct CopybookParseError {
     // Line in copybook that caused the error.
     line: String,
 
-    // The expected token in the 
+    // The expected token in the
     expected: String,
 }
 

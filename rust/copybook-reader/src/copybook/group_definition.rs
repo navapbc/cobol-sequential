@@ -74,7 +74,11 @@ impl PartialEq for GroupDefinition {
 
 impl Clone for GroupDefinition {
     fn clone(&self) -> Self {
-        GroupDefinition::create_with_statements(self.level, self.label.clone(), self.statements.to_vec().clone())
+        GroupDefinition::create_with_statements(
+            self.level,
+            self.label.clone(),
+            self.statements.to_vec(),
+        )
     }
 }
 
@@ -96,46 +100,44 @@ impl fmt::Display for GroupDefinition {
             self.get_label()
         )
     }
-} 
+}
 
 #[cfg(test)]
- mod tests {
+mod tests {
     use crate::copybook::FieldDefinition;
 
     use super::*;
- 
-     #[test]
-     fn matching_groups_should_be_equal() {
-        let original = GroupDefinition::create_with_statements(
-            1u32, 
-            String::from("GROUP"), 
-            vec![
-                StatementDefinition::FieldDefinition(FieldDefinition::new(
-                    2u32,
-                    String::from("ONE"),
-                    String::from("PIC X(5)"),
-                )),
-        ]);
- 
-         assert_eq!(original, original.clone());
-     }
 
-     #[test]
+    #[test]
+    fn matching_groups_should_be_equal() {
+        let original = GroupDefinition::create_with_statements(
+            1u32,
+            String::from("GROUP"),
+            vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
+                2u32,
+                String::from("ONE"),
+                String::from("PIC X(5)"),
+            ))],
+        );
+
+        assert_eq!(original, original.clone());
+    }
+
+    #[test]
     fn groups_with_different_lengths_are_different() {
         let first = GroupDefinition::create_with_statements(
-            1u32, 
-            String::from("GROUP"), 
-            vec![
-                StatementDefinition::FieldDefinition(FieldDefinition::new(
-                    2u32,
-                    String::from("ONE"),
-                    String::from("PIC X(5)"),
-                )),
-        ]);
+            1u32,
+            String::from("GROUP"),
+            vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
+                2u32,
+                String::from("ONE"),
+                String::from("PIC X(5)"),
+            ))],
+        );
 
         let second = GroupDefinition::create_with_statements(
-            1u32, 
-            String::from("GROUP"), 
+            1u32,
+            String::from("GROUP"),
             vec![
                 StatementDefinition::FieldDefinition(FieldDefinition::new(
                     2u32,
@@ -147,35 +149,34 @@ impl fmt::Display for GroupDefinition {
                     String::from("TWO"),
                     String::from("PIC X(5)"),
                 )),
-        ]);
- 
-         assert_ne!(first, second);
+            ],
+        );
+
+        assert_ne!(first, second);
     }
 
     #[test]
     fn groups_with_different_fields_are_different() {
         let first = GroupDefinition::create_with_statements(
-            1u32, 
-            String::from("GROUP"), 
-            vec![
-                StatementDefinition::FieldDefinition(FieldDefinition::new(
-                    2u32,
-                    String::from("ONE"),
-                    String::from("PIC X(5)"),
-                )),
-        ]);
+            1u32,
+            String::from("GROUP"),
+            vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
+                2u32,
+                String::from("ONE"),
+                String::from("PIC X(5)"),
+            ))],
+        );
 
         let second = GroupDefinition::create_with_statements(
-            1u32, 
-            String::from("GROUP"), 
-            vec![
-                StatementDefinition::FieldDefinition(FieldDefinition::new(
-                    5u32, // different level
-                    String::from("ONE"),
-                    String::from("PIC X(5)"),
-                )),
-        ]);
- 
-         assert_ne!(first, second);
+            1u32,
+            String::from("GROUP"),
+            vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
+                5u32, // different level
+                String::from("ONE"),
+                String::from("PIC X(5)"),
+            ))],
+        );
+
+        assert_ne!(first, second);
     }
- }
+}

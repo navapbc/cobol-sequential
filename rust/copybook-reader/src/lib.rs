@@ -26,7 +26,7 @@
 //!             02 START-BALANCE PIC 9(6)V9(2).
 //!             02 END-BALANCE PIC 9(6)V9(2).
 //! ```
-//! 
+//!
 //! # Reading a Copybook
 //! The [parse] method provides a convenient way to read a COBOL copybook into the [copybook::CopybookDefinition].
 //!
@@ -55,7 +55,7 @@ mod rule_parser;
 ///
 /// ```
 /// use copybook_reader::copybook::*;
-/// 
+///
 /// let copybook = "01 RECORD.
 ///                     02 FIRST-FIELD PIC X(5).
 ///                     02 SECOND-FIELD PIC X(5).";
@@ -63,8 +63,8 @@ mod rule_parser;
 ///
 /// // Copybook definitions can be displayed easily by printing.
 /// print!("{}", copybook_definition);
-/// 
-/// 
+///
+///
 /// assert_eq!(copybook_definition,
 /// CopybookDefinition::create_with_statements(vec![
 ///     StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
@@ -159,9 +159,9 @@ fn place_new_field(
                         group.get_label()
                     );
                     group.add_statement(copybook::StatementDefinition::FieldDefinition(new_field));
-    
+
                     group_stack.push_back(current_group.unwrap())
-                },
+                }
                 Ordering::Less | Ordering::Equal => {
                     // When the field level is lower or equal to the group level then the current
                     // group has terminated and we need to evaluate where to place the current group
@@ -173,21 +173,30 @@ fn place_new_field(
                                 group.get_label(),
                                 prev_group.get_label()
                             );
-        
-                            prev_group.add_statement(copybook::StatementDefinition::GroupDefinition(
-                                current_group.unwrap(),
-                            ));
-                        },
+
+                            prev_group.add_statement(
+                                copybook::StatementDefinition::GroupDefinition(
+                                    current_group.unwrap(),
+                                ),
+                            );
+                        }
                         None => {
-                            log::debug!("Add current Group {:?} to Copybook Definition", group.get_label());
-                            copybook_definition.add_statement(copybook::StatementDefinition::GroupDefinition(current_group.unwrap()));
-                        },
+                            log::debug!(
+                                "Add current Group {:?} to Copybook Definition",
+                                group.get_label()
+                            );
+                            copybook_definition.add_statement(
+                                copybook::StatementDefinition::GroupDefinition(
+                                    current_group.unwrap(),
+                                ),
+                            );
+                        }
                     };
 
                     //re-evaluate where the new field should go now that the current group has
                     // been merged with the previous group on the stack.
                     place_new_field(new_field, group_stack, copybook_definition);
-                },
+                }
             }
         }
     }

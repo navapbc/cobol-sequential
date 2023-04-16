@@ -4,7 +4,6 @@
 //! copybook. The [self::copybook_definition::CopybookDefinition] is the top level struct while the
 //! others are supporting structs to help represent different parts of the copybook.
 
-
 // Defines related modules for the copybook module
 pub mod copybook_definition;
 pub mod field_definition;

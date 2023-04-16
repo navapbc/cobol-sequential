@@ -12,7 +12,6 @@ pub struct CopybookDefinition {
 }
 
 impl CopybookDefinition {
-
     // Creates a new copybook definition from a Vector of Statements.
     pub fn create_with_statements(statements: Vec<StatementDefinition>) -> CopybookDefinition {
         CopybookDefinition { statements }
@@ -25,7 +24,6 @@ impl CopybookDefinition {
 }
 
 impl PartialEq for CopybookDefinition {
-
     // Checks if the current copybook definition matches the provided copybook definition.
     fn eq(&self, other: &Self) -> bool {
         if self.statements.len() != other.statements.len() {
@@ -43,11 +41,9 @@ impl PartialEq for CopybookDefinition {
 }
 
 impl Clone for CopybookDefinition {
-
-   fn clone(&self) -> Self {
-        CopybookDefinition::create_with_statements(self.get_statements().to_vec().clone())
-   }
-
+    fn clone(&self) -> Self {
+        CopybookDefinition::create_with_statements(self.get_statements().to_vec())
+    }
 }
 
 impl fmt::Display for CopybookDefinition {
@@ -60,51 +56,48 @@ impl fmt::Display for CopybookDefinition {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::copybook::{GroupDefinition, FieldDefinition};
+    use crate::copybook::{FieldDefinition, GroupDefinition};
 
     use super::*;
 
     #[test]
     fn matching_copybooks_should_be_equal() {
-
-        let original = CopybookDefinition::create_with_statements(vec![
-            StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
-                1u32,
-                String::from("TOP-LEVEL"),
-                vec![
-                    StatementDefinition::FieldDefinition(FieldDefinition::new(
+        let original =
+            CopybookDefinition::create_with_statements(vec![StatementDefinition::GroupDefinition(
+                GroupDefinition::create_with_statements(
+                    1u32,
+                    String::from("TOP-LEVEL"),
+                    vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
                         2u32,
                         String::from("ONE"),
                         String::from("PIC X(5)"),
-                    )),
-                ])),
-        ]);
+                    ))],
+                ),
+            )]);
 
         assert_eq!(original, original.clone());
     }
 
     #[test]
     fn copybooks_with_different_lengths_are_different() {
-
-        let first = CopybookDefinition::create_with_statements(vec![
-            StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
-                1u32,
-                String::from("TOP-LEVEL"),
-                vec![])),
-        ]);
+        let first =
+            CopybookDefinition::create_with_statements(vec![StatementDefinition::GroupDefinition(
+                GroupDefinition::create_with_statements(1u32, String::from("TOP-LEVEL"), vec![]),
+            )]);
 
         let second = CopybookDefinition::create_with_statements(vec![
             StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
                 1u32,
                 String::from("TOP-LEVEL"),
-                vec![])),
+                vec![],
+            )),
             StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
                 1u32,
                 String::from("TOP-LEVEL-2"),
-                vec![])),
+                vec![],
+            )),
         ]);
 
         assert_ne!(first, second);
@@ -112,20 +105,15 @@ mod tests {
 
     #[test]
     fn copybooks_with_different_group_labels_are_different() {
+        let first =
+            CopybookDefinition::create_with_statements(vec![StatementDefinition::GroupDefinition(
+                GroupDefinition::create_with_statements(1u32, String::from("TOP-LEVEL"), vec![]),
+            )]);
 
-        let first = CopybookDefinition::create_with_statements(vec![
-            StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
-                1u32,
-                String::from("TOP-LEVEL"),
-                vec![])),
-        ]);
-
-        let second = CopybookDefinition::create_with_statements(vec![
-            StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
-                1u32,
-                String::from("TOP-LEVEL-2"),
-                vec![])),
-        ]);
+        let second =
+            CopybookDefinition::create_with_statements(vec![StatementDefinition::GroupDefinition(
+                GroupDefinition::create_with_statements(1u32, String::from("TOP-LEVEL-2"), vec![]),
+            )]);
 
         assert_ne!(first, second);
     }
