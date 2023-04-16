@@ -1,14 +1,13 @@
        01 RECORD-R.
-           05 NINE-NUMBER 99.
-           05 ONE-NINE-NUMBER 9.
-           05 TWO-NINE-NUMBER 9(2).
-           05 ALPHA aaa.
-           05 ALPHA-PAREN a(3).
-           05 ALPHA-NUM xxxx.
-           05 ALPHA-NUM-PAREN x(4).
-           05 DECIMAL v(3). *> can store .175
-           05 SIGNED-NUM s9(2). *> examples -76
-           05 ASSUMED-DECIMAL p9. *> .6
+           05 NINE-NUMBER PIC 99.
+           05 TWO-NINE-NUMBER PIC 9(2).
+           05 ALPHA PIC aaa.
+           05 ALPHA-PAREN PIC a(3).
+           05 ALPHA-NUM PIC xxxx.
+           05 ALPHA-NUM-PAREN PIC x(4).
+           05 DECIMAL PIC 9(2)v9(3). *> can store .175
+           05 SIGNED-NUM PIC s9(2). *> examples -76
+           05 ASSUMED-DECIMAL PIC p9. *> .6
            05 PICTURE-ALPHA PIC X(10).
            05 PICTURE-CHAR PIC X.
            05 PICTURE-NUM PIC 9(2).
