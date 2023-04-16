@@ -42,6 +42,14 @@ impl PartialEq for CopybookDefinition {
     }
 }
 
+impl Clone for CopybookDefinition {
+
+   fn clone(&self) -> Self {
+        CopybookDefinition::create_with_statements(self.get_statements().to_vec().clone())
+   }
+
+}
+
 impl fmt::Display for CopybookDefinition {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let _ = writeln!(f, "CopybookDefinition:");
@@ -49,5 +57,76 @@ impl fmt::Display for CopybookDefinition {
             let _ = writeln!(f, "{}", group);
         }
         writeln!(f)
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use crate::copybook::{GroupDefinition, FieldDefinition};
+
+    use super::*;
+
+    #[test]
+    fn matching_copybooks_should_be_equal() {
+
+        let original = CopybookDefinition::create_with_statements(vec![
+            StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
+                1u32,
+                String::from("TOP-LEVEL"),
+                vec![
+                    StatementDefinition::FieldDefinition(FieldDefinition::new(
+                        2u32,
+                        String::from("ONE"),
+                        String::from("PIC X(5)"),
+                    )),
+                ])),
+        ]);
+
+        assert_eq!(original, original.clone());
+    }
+
+    #[test]
+    fn copybooks_with_different_lengths_are_different() {
+
+        let first = CopybookDefinition::create_with_statements(vec![
+            StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
+                1u32,
+                String::from("TOP-LEVEL"),
+                vec![])),
+        ]);
+
+        let second = CopybookDefinition::create_with_statements(vec![
+            StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
+                1u32,
+                String::from("TOP-LEVEL"),
+                vec![])),
+            StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
+                1u32,
+                String::from("TOP-LEVEL-2"),
+                vec![])),
+        ]);
+
+        assert_ne!(first, second);
+    }
+
+    #[test]
+    fn copybooks_with_different_group_labels_are_different() {
+
+        let first = CopybookDefinition::create_with_statements(vec![
+            StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
+                1u32,
+                String::from("TOP-LEVEL"),
+                vec![])),
+        ]);
+
+        let second = CopybookDefinition::create_with_statements(vec![
+            StatementDefinition::GroupDefinition(GroupDefinition::create_with_statements(
+                1u32,
+                String::from("TOP-LEVEL-2"),
+                vec![])),
+        ]);
+
+        assert_ne!(first, second);
     }
 }

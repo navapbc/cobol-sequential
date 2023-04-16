@@ -151,32 +151,43 @@ fn place_new_field(
                 .add_statement(copybook::StatementDefinition::FieldDefinition(new_field));
         }
         Some(group) => {
-            if new_field.get_level() > group.get_level() {
-                log::debug!(
-                    "Add new Field {:?} to current Group {:?}",
-                    new_field.get_label(),
-                    group.get_label()
-                );
-                group.add_statement(copybook::StatementDefinition::FieldDefinition(new_field));
+            match new_field.get_level().cmp(group.get_level()) {
+                Ordering::Greater => {
+                    log::debug!(
+                        "Add new Field {:?} to current Group {:?}",
+                        new_field.get_label(),
+                        group.get_label()
+                    );
+                    group.add_statement(copybook::StatementDefinition::FieldDefinition(new_field));
+    
+                    group_stack.push_back(current_group.unwrap())
+                },
+                Ordering::Less | Ordering::Equal => {
+                    // When the field level is lower or equal to the group level then the current
+                    // group has terminated and we need to evaluate where to place the current group
 
-                group_stack.push_back(current_group.unwrap())
-            } else {
-                // When the field level is lower or equal to the group level then the current
-                // group has terminated and the current field belongs to a previous group.
-                let prev_group = group_stack.back_mut().unwrap();
-                log::debug!(
-                    "Add current Group {:?} as StatementDefinition to Previous Group {:?}",
-                    group.get_label(),
-                    prev_group.get_label()
-                );
+                    match group_stack.back_mut() {
+                        Some(prev_group) => {
+                            log::debug!(
+                                "Add current Group {:?} as StatementDefinition to Previous Group {:?}",
+                                group.get_label(),
+                                prev_group.get_label()
+                            );
+        
+                            prev_group.add_statement(copybook::StatementDefinition::GroupDefinition(
+                                current_group.unwrap(),
+                            ));
+                        },
+                        None => {
+                            log::debug!("Add current Group {:?} to Copybook Definition", group.get_label());
+                            copybook_definition.add_statement(copybook::StatementDefinition::GroupDefinition(current_group.unwrap()));
+                        },
+                    };
 
-                prev_group.add_statement(copybook::StatementDefinition::GroupDefinition(
-                    current_group.unwrap(),
-                ));
-
-                //re-evaluate where the new field should go now that the current group has
-                // been merged with the previous group on the stack.
-                place_new_field(new_field, group_stack, copybook_definition);
+                    //re-evaluate where the new field should go now that the current group has
+                    // been merged with the previous group on the stack.
+                    place_new_field(new_field, group_stack, copybook_definition);
+                },
             }
         }
     }
@@ -400,6 +411,44 @@ mod tests {
     }
 
     #[test]
+    fn should_parse_group_with_trailing_top_field() {
+        let parse_result = parse(
+            "\
+        01 GROUPONE.
+            05 GROUPTWO.
+                10 FIRSTFIELD PIC X(5).
+        01 SECONDFIELD PIC X(9).
+        ",
+        );
+
+        match parse_result {
+            Ok(copybook_def) => {
+                assert_eq!(copybook_def.get_statements().len(), 2);
+            }
+            Err(_) => unreachable!(),
+        }
+    }
+
+    #[test]
+    fn should_parse_group_with_field_trailing_group() {
+        let parse_result = parse(
+            "\
+        01 GROUPONE.
+            05 GROUPTWO.
+                10 FIRSTFIELD PIC X(5).
+            05 SECONDFIELD PIC X(9).
+        ",
+        );
+
+        match parse_result {
+            Ok(copybook_def) => {
+                assert_eq!(copybook_def.get_statements().len(), 1);
+            }
+            Err(_) => unreachable!(),
+        }
+    }
+
+    #[test]
     fn should_parse_nested_group_without_indentation() {
         let parse_result = parse(
             "\
@@ -429,5 +478,12 @@ mod tests {
             }
             Err(_) => unreachable!(),
         }
+    }
+
+    #[test]
+    fn should_fail_when_grammar_is_invalid() {
+        // copybook is invalid because it's missing a period
+        let parse_result = parse("01 FIELDNAME");
+        assert_eq!(parse_result.is_err(), true);
     }
 }
