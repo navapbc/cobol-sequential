@@ -53,6 +53,7 @@ pub fn string_into_file_rule(copybook_str: &str) -> Result<Pairs<Rule>, Box<Erro
     }
 }
 
+#[no_coverage] // testing no_coverage option
 pub fn map_rule_to_name(rule: &Rule) -> &'static str {
     match rule {
         Rule::EOI => "EOI",
@@ -146,5 +147,14 @@ mod tests {
     fn statement_def_should_allow_leading_whitespace() {
         let result = CopybookPestParser::parse(Rule::statement, "     01 GROUPNAME.\n");
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn invalid_grammar_should_return_error() {
+        let result = string_into_file_rule("lksjdf");
+        match result {
+            Ok(_) => unreachable!("this string should always be invalid"),
+            Err(_) => assert!(true),
+        }
     }
 }

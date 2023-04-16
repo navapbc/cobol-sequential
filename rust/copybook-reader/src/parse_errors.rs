@@ -90,3 +90,32 @@ impl fmt::Display for CopybookParseError {
         write!(f, "{}", self.get_message())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::rule_parser;
+
+    use super::*;
+
+    #[test]
+    fn convert_pest_error() {
+        let copybook = "01 RECORD
+                    02 FIRST-FIELD PIC X(5).
+                     02 SECOND-FIELD PIC X(5).";
+        let result = rule_parser::string_into_file_rule(copybook);
+        matches!(result, Err(_));
+        match result {
+            Ok(_) => unreachable!("this copybook should always error"),
+            Err(pest_error) => {
+                let copybook_error = CopybookParseError::new(&pest_error.as_ref());
+
+                assert_eq!(copybook_error.line_number, 1);
+                assert_eq!(copybook_error.column_number, 4);
+                assert_eq!(copybook_error.expected, "field");
+                assert_eq!(copybook_error.line, "01 RECORD");
+
+                assert_eq!(copybook_error.get_message(), "Failed to parse copybook on Line 1, Column 4. Expected a field token but found \"RECORD\"");
+            }
+        }
+    }
+}
