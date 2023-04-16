@@ -19,4 +19,4 @@ pest_derive = "2.5.4"
 
 [dev-dependencies]
 test-log = "0.2.11"
-test-case = "3.0.0"
+parameterized = "1.0.1"
