@@ -14,3 +14,5 @@
            05 PIC-NUM-COMP PIC 9(2) COMP.
            05 PIC-NUM-COMP-3 PIC 9(2) COMP-3.
            05 PIC-DECIMAL PIC 9(6)V9(2).
+           05 EXPLICIT-DECIMAL PIC 9(6).9(2).
+           05 PIC-DECIMAL PIC S9(6)V9(2).
