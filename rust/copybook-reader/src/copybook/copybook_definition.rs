@@ -58,7 +58,7 @@ impl fmt::Display for CopybookDefinition {
 
 #[cfg(test)]
 mod tests {
-    use crate::copybook::{FieldDefinition, GroupDefinition};
+    use crate::copybook::{FieldDefinition, GroupDefinition, DataTypeEnum};
 
     use super::*;
 
@@ -72,7 +72,8 @@ mod tests {
                     vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
                         2u32,
                         String::from("ONE"),
-                        String::from("PIC X(5)"),
+                        5u32,
+                        DataTypeEnum::AlphaNumeric,
                     ))],
                 ),
             )]);

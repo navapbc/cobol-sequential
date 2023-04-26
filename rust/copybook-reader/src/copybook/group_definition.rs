@@ -104,7 +104,7 @@ impl fmt::Display for GroupDefinition {
 
 #[cfg(test)]
 mod tests {
-    use crate::copybook::FieldDefinition;
+    use crate::copybook::{FieldDefinition, DataTypeEnum};
 
     use super::*;
 
@@ -116,7 +116,8 @@ mod tests {
             vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
                 2u32,
                 String::from("ONE"),
-                String::from("PIC X(5)"),
+                5u32,
+                DataTypeEnum::AlphaNumeric,
             ))],
         );
 
@@ -131,7 +132,8 @@ mod tests {
             vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
                 2u32,
                 String::from("ONE"),
-                String::from("PIC X(5)"),
+                5u32,
+                DataTypeEnum::AlphaNumeric,
             ))],
         );
 
@@ -142,12 +144,14 @@ mod tests {
                 StatementDefinition::FieldDefinition(FieldDefinition::new(
                     2u32,
                     String::from("ONE"),
-                    String::from("PIC X(5)"),
+                    5u32,
+                    DataTypeEnum::AlphaNumeric,
                 )),
                 StatementDefinition::FieldDefinition(FieldDefinition::new(
                     2u32,
                     String::from("TWO"),
-                    String::from("PIC X(5)"),
+                    5u32,
+                    DataTypeEnum::AlphaNumeric,
                 )),
             ],
         );
@@ -163,7 +167,8 @@ mod tests {
             vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
                 2u32,
                 String::from("ONE"),
-                String::from("PIC X(5)"),
+                5u32,
+                DataTypeEnum::AlphaNumeric,
             ))],
         );
 
@@ -173,7 +178,8 @@ mod tests {
             vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
                 5u32, // different level
                 String::from("ONE"),
-                String::from("PIC X(5)"),
+                5u32,
+                DataTypeEnum::AlphaNumeric,
             ))],
         );
 

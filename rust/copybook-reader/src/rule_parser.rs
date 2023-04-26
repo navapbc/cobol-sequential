@@ -16,41 +16,84 @@ fn field_rule_into_definition(field_rule: Pair<Rule>, level: u32) -> copybook::F
     let label: String = inner_field_rules.next().unwrap().as_str().to_owned();
 
     let data_type_rule = inner_field_rules.next().unwrap();
-    let data_type_str: String = data_type_rule.as_str().to_owned();
+    let length_and_data_type = get_length_and_type_from_rule(data_type_rule);
 
+    copybook::FieldDefinition::new(
+        level,
+        label,
+        length_and_data_type.0,
+        length_and_data_type.1,
+    )
+}
+
+fn get_length_and_type_from_rule(data_type_pair: Pair<Rule>) -> (u32, DataTypeEnum) {
     // The data_type rule should always contain 1 inner rule that identifies the actual type
     // and carries extra information about that specific data type.
-    let subtype_pair = data_type_rule.into_inner().next().unwrap();
-    print!("subtype pair: {:?}", subtype_pair);
-    let length_and_data_type = match subtype_pair.as_rule() {
+    let subtype_pair = data_type_pair.into_inner().next().unwrap();
+    let subtype_span = subtype_pair.as_span();
+    println!("subtype pair: {:?}", subtype_pair);
+    println!("subtype span: {:?}", subtype_span);
+    match subtype_pair.as_rule() {
         Rule::alphanumeric_type => {
             let mut subtype_inner = subtype_pair.into_inner();
 
-            // The alpha-numeric type always contains a data type length
-            let length: u32 = subtype_inner.next().unwrap().as_str()
-                .parse()
-                .unwrap_or_else(|error|  panic!(" field length should have been an unsigned integer because the grammar for an integer is always a positive number: {error}"));
+            //TODO is this repetitive? is there a way to refactor this?
+            let maybe_length_pair = subtype_inner.next();
+            let length: u32 = match maybe_length_pair {
+                None => {
+                    // When the copybook does not explicitly define the length in the format
+                    // 9(<length>) then we should assume that the length is implicitly defined by
+                    // repeating the value 9 for each digit in the number. For example if the PIC clause
+                    // is 999 the length of the field should be 3.
+                    
+                    // Since the grammar guarantees that there are no other values in the matched
+                    // string besides 9 we can assume that the length of the data type is the length
+                    // of the matched string.
+
+                    //TODO is a usize better than u32?
+                    (subtype_span.end() - subtype_span.start()).try_into().unwrap()
+
+                }
+                Some(explicit_length_pair) => {
+                    explicit_length_pair.as_str()
+                        .parse()
+                        .unwrap_or_else(|error| panic!("field length should have been an unsigned integer based on grammar: {error}"))
+                }
+            };
 
             (length, DataTypeEnum::AlphaNumeric)
-        },
+        }
         Rule::numeric_type => {
             let mut subtype_inner = subtype_pair.into_inner();
 
-            // The numeric type always contains a data type length
-            //TODO is this repetitive?
-            let length: u32 = subtype_inner.next().unwrap().as_str()
-                .parse()
-                .unwrap_or_else(|error|  panic!(" field length should have been an unsigned integer because the grammar for an integer is always a positive number: {error}"));
+            //TODO is this repetitive? is there a way to refactor this?
+            let maybe_length_pair = subtype_inner.next();
+            let length: u32 = match maybe_length_pair {
+                None => {
+                    // When the copybook does not explicitly define the length in the format
+                    // 9(<length>) then we should assume that the length is implicitly defined by
+                    // repeating the value 9 for each digit in the number. For example if the PIC clause
+                    // is 999 the length of the field should be 3.
+                    
+                    // Since the grammar guarantees that there are no other values in the matched
+                    // string besides 9 we can assume that the length of the data type is the length
+                    // of the matched string.
 
-            //TODO test this
-            //TODO how to handle the derived length?
-            (length, DataTypeEnum::Alphabetic)
-        },
+                    //TODO is a usize better than u32?
+                    (subtype_span.end() - subtype_span.start()).try_into().unwrap()
+
+                }
+                Some(explicit_length_pair) => {
+                    explicit_length_pair.as_str()
+                        .parse()
+                        .unwrap_or_else(|error| panic!("field length should have been an unsigned integer based on grammar: {error}"))
+                }
+            };
+
+            (length, DataTypeEnum::Number())
+        }
         _ => unreachable!("Undefined data type rule in rule parser"),
-    };
-    println!("length and type {:?}", length_and_data_type);
-
-    copybook::FieldDefinition::new_with_length(level, label, data_type_str, length_and_data_type.0, length_and_data_type.1)
+    }
 }
 
 fn group_rule_into_definition(group: Pair<Rule>, level: u32) -> copybook::GroupDefinition {
@@ -142,27 +185,35 @@ mod tests {
 
         assert_eq!(*field_definition.get_level(), 1u32);
         assert_eq!(field_definition.get_label(), "FIELDNAME");
-        assert_eq!(*field_definition.get_length(), Some(5u32));
-        assert_eq!(field_definition.get_data_type(), "PIC X(5)");
+        assert_eq!(*field_definition.get_length(), 5u32);
 
-        let maybe_data_type = field_definition.get_data_type2();
-        match maybe_data_type {
-            Some(data_type) => match data_type {
-                DataTypeEnum::AlphaNumeric => println!("success!"),
-                _ => unreachable!("The data type should be AlphaNumeric"),
-            },
-            None => unreachable!(),
+        let data_type = field_definition.get_data_type();
+        match data_type {
+            DataTypeEnum::AlphaNumeric => println!("success!"),
+            _ => unreachable!("The data type should be AlphaNumeric"),
         }
     }
 
     #[parameterized(copybook_str = {
         "PIC 9(2)",
         "PIC 999",
-        "PIC 9(20)"
+        "PIC 9(20)",
+        "PIC X(3)",
+        "PIC XX",
+    }, expected_length = {
+        2u32,
+        3u32,
+        20u32,
+        3u32,
+        2u32,
     })]
-    fn should_parse_numeric_types(copybook_str: &str) {
+    fn should_parse_lengths(copybook_str: &str, expected_length: u32) {
         let result = CopybookPestParser::parse(Rule::data_type, copybook_str);
         assert!(result.is_ok());
+
+        let data_type_pair = result.unwrap().next().unwrap();
+        let length_and_type = get_length_and_type_from_rule(data_type_pair);
+        assert_eq!(length_and_type.0, expected_length);
     }
 
     #[parameterized(copybook_str = {
