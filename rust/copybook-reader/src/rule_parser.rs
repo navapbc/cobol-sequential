@@ -4,6 +4,7 @@ use pest::iterators::Pairs;
 use pest::Parser;
 
 use crate::copybook;
+use crate::copybook::DataTypeEnum;
 
 #[derive(Parser)]
 #[grammar = "src/copybook_grammar.pest"]
@@ -13,9 +14,43 @@ fn field_rule_into_definition(field_rule: Pair<Rule>, level: u32) -> copybook::F
     let mut inner_field_rules = field_rule.into_inner();
 
     let label: String = inner_field_rules.next().unwrap().as_str().to_owned();
-    let data_type: String = inner_field_rules.next().unwrap().as_str().to_owned();
 
-    copybook::FieldDefinition::new(level, label, data_type)
+    let data_type_rule = inner_field_rules.next().unwrap();
+    let data_type_str: String = data_type_rule.as_str().to_owned();
+
+    // The data_type rule should always contain 1 inner rule that identifies the actual type
+    // and carries extra information about that specific data type.
+    let subtype_pair = data_type_rule.into_inner().next().unwrap();
+    print!("subtype pair: {:?}", subtype_pair);
+    let length_and_data_type = match subtype_pair.as_rule() {
+        Rule::alphanumeric_type => {
+            let mut subtype_inner = subtype_pair.into_inner();
+
+            // The alpha-numeric type always contains a data type length
+            let length: u32 = subtype_inner.next().unwrap().as_str()
+                .parse()
+                .unwrap_or_else(|error|  panic!(" field length should have been an unsigned integer because the grammar for an integer is always a positive number: {error}"));
+
+            (length, DataTypeEnum::AlphaNumeric)
+        },
+        Rule::numeric_type => {
+            let mut subtype_inner = subtype_pair.into_inner();
+
+            // The numeric type always contains a data type length
+            //TODO is this repetitive?
+            let length: u32 = subtype_inner.next().unwrap().as_str()
+                .parse()
+                .unwrap_or_else(|error|  panic!(" field length should have been an unsigned integer because the grammar for an integer is always a positive number: {error}"));
+
+            //TODO test this
+            //TODO how to handle the derived length?
+            (length, DataTypeEnum::Alphabetic)
+        },
+        _ => unreachable!("Undefined data type rule in rule parser"),
+    };
+    println!("length and type {:?}", length_and_data_type);
+
+    copybook::FieldDefinition::new_with_length(level, label, data_type_str, length_and_data_type.0, length_and_data_type.1)
 }
 
 fn group_rule_into_definition(group: Pair<Rule>, level: u32) -> copybook::GroupDefinition {
@@ -57,9 +92,13 @@ pub fn map_rule_to_name(rule: &Rule) -> &'static str {
     match rule {
         Rule::EOI => "EOI",
         Rule::whitespace => "whitespace",
+        Rule::picture => "picture",
         Rule::level => "level",
         Rule::label => "label",
         Rule::data_type => "data_type",
+        Rule::integer => "integer",
+        Rule::alphanumeric_type => "alphanumeric_type",
+        Rule::numeric_type => "numeric_type",
         Rule::field => "field",
         Rule::group => "group",
         Rule::statement => "statement",
@@ -103,7 +142,27 @@ mod tests {
 
         assert_eq!(*field_definition.get_level(), 1u32);
         assert_eq!(field_definition.get_label(), "FIELDNAME");
+        assert_eq!(*field_definition.get_length(), Some(5u32));
         assert_eq!(field_definition.get_data_type(), "PIC X(5)");
+
+        let maybe_data_type = field_definition.get_data_type2();
+        match maybe_data_type {
+            Some(data_type) => match data_type {
+                DataTypeEnum::AlphaNumeric => println!("success!"),
+                _ => unreachable!("The data type should be AlphaNumeric"),
+            },
+            None => unreachable!(),
+        }
+    }
+
+    #[parameterized(copybook_str = {
+        "PIC 9(2)",
+        "PIC 999",
+        "PIC 9(20)"
+    })]
+    fn should_parse_numeric_types(copybook_str: &str) {
+        let result = CopybookPestParser::parse(Rule::data_type, copybook_str);
+        assert!(result.is_ok());
     }
 
     #[parameterized(copybook_str = {

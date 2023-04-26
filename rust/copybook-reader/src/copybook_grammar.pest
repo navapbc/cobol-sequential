@@ -1,7 +1,18 @@
 whitespace = _{ " " }
 
+picture = _{
+    // In Cobol Picture clauses are used to define the attributes of the data type.
+    // This is a silent rule because although it identifies a data type clause it does
+    // not provide actual value to the CopybookDefinition structure.
+    "PIC"
+}
+
 level = { 
     ASCII_DIGIT+ 
+}
+
+integer = {
+    ASCII_DIGIT+
 }
 
 label = {
@@ -15,7 +26,32 @@ label = {
 }
 
 data_type = {
-    "PIC " ~ ASCII_ALPHANUMERIC+ ~ "(" ~ ASCII_DIGIT ~ ")"
+    picture
+    ~ whitespace+
+    ~ (
+        alphanumeric_type
+        | numeric_type
+    )
+}
+
+alphanumeric_type = {
+    "X"
+    ~ (
+        // Supports alpha-numeric data type format X(100)
+        "(" ~ integer ~ ")"
+        // Supports alpha-numeric data type format XXXXX
+        | ("X"*)
+    )
+}
+
+numeric_type = {
+    "9"
+    ~ (
+        // Supports the numeric data type format 9(100)
+        ("(" ~ ASCII_DIGIT+ ~ ")")
+        // Supports the numeric data type format 9999
+        | ( "9"* )
+    )
 }
 
 field = {

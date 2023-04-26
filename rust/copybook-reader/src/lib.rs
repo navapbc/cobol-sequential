@@ -289,6 +289,7 @@ mod tests {
                     copybook::StatementDefinition::FieldDefinition(copybook::FieldDefinition::new(
                         1u32,
                         String::from("FIELDNAME"),
+                        //TODO it's time to refactor this out
                         String::from("PIC X(5)"),
                     )),
                 ]);

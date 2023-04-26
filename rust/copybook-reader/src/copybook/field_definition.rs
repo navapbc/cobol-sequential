@@ -36,6 +36,10 @@ impl FieldDefinition {
             data_type2: None,
         }
     }
+
+    pub fn new_with_length(level: u32, label: String, data_type_str: String,  length: u32, data_type: DataTypeEnum) -> FieldDefinition {
+        FieldDefinition { level, label, data_type: data_type_str, length: Some(length), data_type2: Some(data_type) }
+    }
 }
 
 impl fmt::Display for FieldDefinition {
