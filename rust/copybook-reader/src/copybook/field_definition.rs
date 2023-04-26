@@ -17,14 +17,30 @@ pub struct FieldDefinition {
     //  - comp clause: https://www.techagilist.com/mainframe/usage-comp-declaration/
     //  - decimal point: https://www.mainframestechhelp.com/tutorials/cobol/assumed-decimal-point-data-type.htm
 
-    // modeling:
-    //      There is a type name, binary?, byte size, sign, rust type?
-    //      for decimals there is also scale & precision, decimal point? scale and precision are probably too modern for this layer
-    // 
-    // comp:
-    //      - comp-1
-    //      - comp-2
-    //      - comp-3
+    // Data Type - struct?:
+    //      length - uint32?
+    //
+    //
+    //      
+    //      type_enum - Enum:
+    //          TEXT
+    //          NUMERIC struct
+
+    //              sign - Enum:
+    //                  SIGNED
+    //                  UNSIGNED
+
+    //              comp - Enum
+    //                  NONE
+    //                  COMP-1
+    //                  COMP-2
+    //                  COMP-3
+    //          
+    //          
+    //          DECIMAL_IMPLIED_POINT
+    //          DECIMAL_ASSUMED_POINT_LEFT
+    //          DECIMAL_ASSUMED_POINT_RIGHT
+    //
     // decimals:
     //      - digits
     //      - point position
@@ -49,6 +65,8 @@ pub struct FieldDefinition {
 
     //          there can only be 1 assumed decimal point allowed.
 
+    // The total length of the copybook field
+    // length: uint32,
     data_type: String, //TODO should be an enum
 }
 
