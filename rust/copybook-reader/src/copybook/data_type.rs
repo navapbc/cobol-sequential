@@ -1,11 +1,13 @@
 //! A COBOL Copybook Data Type. COBOL primarily has three categories of data types.
 //! This enum captures those top level types and the additional meta data for each
 //! data type.
+#[derive(Debug, Clone, PartialEq)]
 pub enum DataTypeEnum {
+    // Text fields that contain alphabetic values. In COBOL these may be referenced as A().
+    Alphabetic,
 
-    // Text fields contain alpha-numeric values. In COBOL these may be referenced as X() or A()
-    // TODO: would it make more sense to model this with X or A separate. Or should that just be meta data.
-    TEXT,
+    // Text fields that contain alpha-numeric values. In COBOL htese may be referenced as X().
+    AlphaNumeric,
 
     // Number fields contain whole numbers. In COBOL these may be referenced as 9() or 999.
     Number(),
@@ -13,17 +15,16 @@ pub enum DataTypeEnum {
     // Decimal fields in COBOL allow you to store approximate values for small fractional values or
     // very large whole numbers without using as many bytes as you would need to store an exact value.
     // In COBOL these may be referenced as 9()V9(), 9().9(), or P()V()
-    Decimal()
+    Decimal(),
 }
 
 // The data type sign identifies if a numerical data type is allowed to be negative or can only be positive.
 pub enum SignEnum {
-
     // A signed numerical data type can have negative or positive values.
     SIGNED,
 
     // An unsigned numerical data type will not track whether the value is positive or negative.
-    UNSIGNED
+    UNSIGNED,
 }
 
 // Computational types are stored in a binary format. COBOL typically stores all data types in an
@@ -33,13 +34,12 @@ pub enum CompEnum {
     Ascii,
     Comp1,
     Comp2,
-    Comp3
+    Comp3,
 }
 
 // COBOL has three forms of decimals types that can be used to represent numbers with
 // fractional parts, extremely small fractional parts, or extremely large numbers.
 pub enum DecimalTypeEnum {
-
     // The implied decimal point is the type of decimal that you typically think about when you
     // see a decimal data type. In COBOL the implied decimal point is typically represented as
     // something like 9(6)V9(2). The V represents where the decimal point should go so the 9(6)
@@ -65,12 +65,11 @@ pub enum DecimalTypeEnum {
     // to keep the first 3 digits of the number while the P(2) clause means that we are assuming
     // that the last 2 digits are 0. So for example, we may store the numerical value 34500 in
     // this field as "345"
-    AssumedPointRight
-} 
+    AssumedPointRight,
+}
 
 // The Decimal helps define the attributes required to understand and use a Cobol Decimal Field.
 pub struct Decimal {
-
     // The sign of the Decimal Field.
     sign: SignEnum,
 
@@ -91,7 +90,6 @@ pub struct Decimal {
 
 // The Number helps define the attributes required to understand and use a Cobol Number Field.
 pub struct Number {
-
     // The sign of the Number Field.
     sign: SignEnum,
 
