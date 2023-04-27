@@ -4,6 +4,10 @@ use pest::iterators::Pairs;
 use pest::Parser;
 
 use crate::copybook;
+use crate::copybook::data_type::CompEnum;
+use crate::copybook::data_type::Decimal;
+use crate::copybook::data_type::DecimalTypeEnum;
+use crate::copybook::data_type::SignEnum;
 use crate::copybook::DataTypeEnum;
 
 #[derive(Parser)]
@@ -18,12 +22,7 @@ fn field_rule_into_definition(field_rule: Pair<Rule>, level: u32) -> copybook::F
     let data_type_rule = inner_field_rules.next().unwrap();
     let length_and_data_type = data_type_rule_into_length_and_type(data_type_rule);
 
-    copybook::FieldDefinition::new(
-        level,
-        label,
-        length_and_data_type.0,
-        length_and_data_type.1,
-    )
+    copybook::FieldDefinition::new(level, label, length_and_data_type.0, length_and_data_type.1)
 }
 
 fn length_literal_rule_into_u32(length_literal_pair: Pair<Rule>) -> u32 {
@@ -38,31 +37,36 @@ fn length_literal_rule_into_u32(length_literal_pair: Pair<Rule>) -> u32 {
             // 9(<length>) then we should assume that the length is implicitly defined by
             // repeating the value 9 for each digit in the number. For example if the PIC clause
             // is 999 the length of the field should be 3.
-            
+
             // Since the grammar guarantees that there are no other values in the matched
             // string besides 9 we can assume that the length of the data type is the length
             // of the matched string.
 
             //TODO is a usize better than u32?
-            (length_literal_span.end() - length_literal_span.start()).try_into().unwrap()
-
-        }
-        Some(explicit_length_pair) => {
-            explicit_length_pair.as_str()
-                .parse()
+            (length_literal_span.end() - length_literal_span.start())
+                .try_into()
                 .unwrap()
         }
+        Some(explicit_length_pair) => explicit_length_pair.as_str().parse().unwrap(),
     }
 }
 
 fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, DataTypeEnum) {
     // The data_type rule should always contain 1 inner rule that identifies the actual type
-    // and carries extra information about that specific data type.
+    // and carries extra information about that specific data type in subtype
     let subtype_pair = data_type_pair.into_inner().next().unwrap();
     let subtype_span = subtype_pair.as_span();
     println!("subtype pair: {:?}", subtype_pair);
     println!("subtype span: {:?}", subtype_span);
     match subtype_pair.as_rule() {
+        Rule::alphabetic_type => {
+            let mut subtype_inner = subtype_pair.into_inner();
+
+            let length_literal_pair = subtype_inner.next().unwrap();
+            let length = length_literal_rule_into_u32(length_literal_pair);
+
+            (length, DataTypeEnum::Alphabetic)
+        }
         Rule::alphanumeric_type => {
             let mut subtype_inner = subtype_pair.into_inner();
 
@@ -78,6 +82,70 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
             let length = length_literal_rule_into_u32(length_literal_pair);
 
             (length, DataTypeEnum::Number())
+        }
+        Rule::decimal_type => {
+            // Since there are multiple types of decimals there will always be at least one inner
+            // pair that distinguishes the decimal types
+            let decimal_point_type = subtype_pair.into_inner().next().unwrap();
+
+            //TODO test content of data type
+            match decimal_point_type.as_rule() {
+                Rule::implied_decimal_point => {
+                    let mut decimal_point_type_inner = decimal_point_type.into_inner();
+
+                    let left: u32 =
+                        length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
+                    let right =
+                        length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
+
+                    (
+                        left + right,
+                        DataTypeEnum::Decimal(Decimal::new(
+                            SignEnum::UNSIGNED,
+                            CompEnum::Ascii,
+                            DecimalTypeEnum::ImpliedPoint,
+                            left,
+                        )),
+                    )
+                }
+                Rule::assumed_decimal_point_left => {
+                    let mut decimal_point_type_inner = decimal_point_type.into_inner();
+
+                    let left: u32 =
+                        length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
+                    let right =
+                        length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
+
+                    (
+                        right,
+                        DataTypeEnum::Decimal(Decimal::new(
+                            SignEnum::UNSIGNED,
+                            CompEnum::Ascii,
+                            DecimalTypeEnum::AssumedPointLeft,
+                            left,
+                        )),
+                    )
+                }
+                Rule::assumed_decimal_point_right => {
+                    let mut decimal_point_type_inner = decimal_point_type.into_inner();
+
+                    let left: u32 =
+                        length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
+                    let right =
+                        length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
+
+                    (
+                        left,
+                        DataTypeEnum::Decimal(Decimal::new(
+                            SignEnum::UNSIGNED,
+                            CompEnum::Ascii,
+                            DecimalTypeEnum::AssumedPointRight,
+                            right,
+                        )),
+                    )
+                }
+                _ => unreachable!("Undefined decimal point type"),
+            }
         }
         _ => unreachable!("Undefined data type rule in rule parser"),
     }
@@ -128,8 +196,13 @@ pub fn map_rule_to_name(rule: &Rule) -> &'static str {
         Rule::data_type => "data_type",
         Rule::integer => "integer",
         Rule::length_literal => "length_literal",
+        Rule::alphabetic_type => "alphabetic_type",
         Rule::alphanumeric_type => "alphanumeric_type",
         Rule::numeric_type => "numeric_type",
+        Rule::decimal_type => "decimal_type",
+        Rule::implied_decimal_point => "implied_decimal_point",
+        Rule::assumed_decimal_point_left => "implied_decimal_point_left",
+        Rule::assumed_decimal_point_right => "implied_decimal_point_right",
         Rule::field => "field",
         Rule::group => "group",
         Rule::statement => "statement",
@@ -188,12 +261,26 @@ mod tests {
         "PIC 9(20)",
         "PIC X(3)",
         "PIC XX",
+        "PIC A(1)",
+        "PIC AAA",
+        "PIC A",
+        "PIC 9(3)V9(2)",
+        "PIC 9(1).9(5)",
+        "PIC P(3)9(2)",
+        "PIC 9(2)P(3)"
     }, expected_length = {
         2u32,
         3u32,
         20u32,
         3u32,
         2u32,
+        1u32,
+        3u32,
+        1u32,
+        5u32,
+        6u32,
+        2u32,
+        2u32
     })]
     fn should_parse_lengths(copybook_str: &str, expected_length: u32) {
         let result = CopybookPestParser::parse(Rule::data_type, copybook_str);

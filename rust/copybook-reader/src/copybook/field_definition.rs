@@ -27,12 +27,7 @@ pub struct FieldDefinition {
 }
 
 impl FieldDefinition {
-    pub fn new(
-        level: u32,
-        label: String,
-        length: u32,
-        data_type: DataTypeEnum,
-    ) -> FieldDefinition {
+    pub fn new(level: u32, label: String, length: u32, data_type: DataTypeEnum) -> FieldDefinition {
         FieldDefinition {
             level,
             label,

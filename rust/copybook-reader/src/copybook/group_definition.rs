@@ -104,7 +104,7 @@ impl fmt::Display for GroupDefinition {
 
 #[cfg(test)]
 mod tests {
-    use crate::copybook::{FieldDefinition, DataTypeEnum};
+    use crate::copybook::{DataTypeEnum, FieldDefinition};
 
     use super::*;
 

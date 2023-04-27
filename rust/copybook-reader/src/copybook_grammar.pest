@@ -29,7 +29,9 @@ data_type = {
     picture
     ~ whitespace+
     ~ (
-        alphanumeric_type
+        alphabetic_type
+        | decimal_type
+        | alphanumeric_type
         | numeric_type
     )
 }
@@ -57,10 +59,10 @@ length_literal = {
     ~ DROP
 }
 
-numeric_type = {
-    // Numeric types always start with 9 but since the length_literal rule needs the
-    // 9 to operate correctly we are not going to consume the character.
-    &"9"
+alphabetic_type = {
+    // alphanumeric types always start with A but since the length_literal rule needs the
+    // A to operate correctly we are not going to consume the character.
+    &"A"
     ~ length_literal
 }
 
@@ -68,6 +70,48 @@ alphanumeric_type = {
     // alphanumeric types always start with X but since the length_literal rule needs the
     // X to operate correctly we are not going to consume the character.
     &"X"
+    ~ length_literal
+}
+
+numeric_type = {
+    // Numeric types always start with 9 but since the length_literal rule needs the
+    // 9 to operate correctly we are not going to consume the character.
+    &"9"
+    ~ length_literal
+}
+
+decimal_type = {
+    // implied decimal point formats
+    implied_decimal_point
+    | assumed_decimal_point_left
+    | assumed_decimal_point_right
+}
+
+// Implied Decimal points indicate the exact position of the decimal with either a
+// "V" or a ".". So these typically look like 9(2)V(3) or 9(3).(2)
+implied_decimal_point = {
+    &"9"
+    ~ length_literal
+    ~ ("V" | ".")
+    ~ &"9"
+    ~ length_literal
+}
+
+// Assumed decimal point left always has a position length literal on the left such as
+// P(2)9(3) or PP9(3).
+assumed_decimal_point_left = {
+    &"P"
+    ~ length_literal
+    ~ &"9"
+    ~ length_literal
+}
+
+// Assumed decimal point right always has a position length literal on the right such as
+// 9(3)P(2) or 9(3)PP.
+assumed_decimal_point_right = {
+    &"9"
+    ~ length_literal
+    ~ &"P"
     ~ length_literal
 }
 

@@ -58,7 +58,7 @@ impl fmt::Display for CopybookDefinition {
 
 #[cfg(test)]
 mod tests {
-    use crate::copybook::{FieldDefinition, GroupDefinition, DataTypeEnum};
+    use crate::copybook::{DataTypeEnum, FieldDefinition, GroupDefinition};
 
     use super::*;
 

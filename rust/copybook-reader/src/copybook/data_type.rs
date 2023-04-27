@@ -1,6 +1,8 @@
 //! A COBOL Copybook Data Type. COBOL primarily has three categories of data types.
 //! This enum captures those top level types and the additional meta data for each
 //! data type.
+
+use lombok::AllArgsConstructor;
 #[derive(Debug, Clone, PartialEq)]
 pub enum DataTypeEnum {
     // Text fields that contain alphabetic values. In COBOL these may be referenced as A().
@@ -15,10 +17,12 @@ pub enum DataTypeEnum {
     // Decimal fields in COBOL allow you to store approximate values for small fractional values or
     // very large whole numbers without using as many bytes as you would need to store an exact value.
     // In COBOL these may be referenced as 9()V9(), 9().9(), or P()V()
-    Decimal(),
+    Decimal(Decimal),
 }
 
 // The data type sign identifies if a numerical data type is allowed to be negative or can only be positive.
+//TODO test PartialEq
+#[derive(Debug, Clone, PartialEq)]
 pub enum SignEnum {
     // A signed numerical data type can have negative or positive values.
     SIGNED,
@@ -30,6 +34,7 @@ pub enum SignEnum {
 // Computational types are stored in a binary format. COBOL typically stores all data types in an
 // ASCII format meaning that the number 12 requires 2 bytes of space. But because computational
 // types are stored in binary they can be more compressed.
+#[derive(Debug, Clone, PartialEq)]
 pub enum CompEnum {
     Ascii,
     Comp1,
@@ -39,6 +44,7 @@ pub enum CompEnum {
 
 // COBOL has three forms of decimals types that can be used to represent numbers with
 // fractional parts, extremely small fractional parts, or extremely large numbers.
+#[derive(Debug, Clone, PartialEq)]
 pub enum DecimalTypeEnum {
     // The implied decimal point is the type of decimal that you typically think about when you
     // see a decimal data type. In COBOL the implied decimal point is typically represented as
@@ -69,6 +75,7 @@ pub enum DecimalTypeEnum {
 }
 
 // The Decimal helps define the attributes required to understand and use a Cobol Decimal Field.
+#[derive(AllArgsConstructor, Debug, Clone, PartialEq)]
 pub struct Decimal {
     // The sign of the Decimal Field.
     sign: SignEnum,
