@@ -76,17 +76,22 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
             (length, DataTypeEnum::AlphaNumeric)
         }
         Rule::numeric_type => {
-            let mut subtype_inner = subtype_pair.into_inner();
+            let sign_enum = inner_data_type_rule_into_sign_enum(subtype_pair.clone());
 
-            let length_literal_pair = subtype_inner.next().unwrap();
+            // Every numeric type is guaranteed to have a length literal by the grammar
+            let length_literal_pair = subtype_pair.into_inner()
+                .last()
+                .unwrap();
             let length = length_literal_rule_into_u32(length_literal_pair);
 
-            (length, DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, CompEnum::Ascii)))
+            (length, DataTypeEnum::Number(copybook::data_type::Number::new(sign_enum, CompEnum::Ascii)))
         }
         Rule::decimal_type => {
+            let sign_enum = inner_data_type_rule_into_sign_enum(subtype_pair.clone());
+
             // Since there are multiple types of decimals there will always be at least one inner
-            // pair that distinguishes the decimal types
-            let decimal_point_type = subtype_pair.into_inner().next().unwrap();
+            // pair that distinguishes the decimal types. This pair should always be last
+            let decimal_point_type = subtype_pair.into_inner().last().unwrap();
 
             match decimal_point_type.as_rule() {
                 Rule::implied_decimal_point => {
@@ -100,7 +105,7 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                     (
                         left + right,
                         DataTypeEnum::Decimal(Decimal::new(
-                            SignEnum::UNSIGNED,
+                            sign_enum,
                             CompEnum::Ascii,
                             DecimalTypeEnum::ImpliedPoint,
                             left,
@@ -118,7 +123,7 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                     (
                         right,
                         DataTypeEnum::Decimal(Decimal::new(
-                            SignEnum::UNSIGNED,
+                            sign_enum,
                             CompEnum::Ascii,
                             DecimalTypeEnum::AssumedPointLeft,
                             left,
@@ -136,7 +141,7 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                     (
                         left,
                         DataTypeEnum::Decimal(Decimal::new(
-                            SignEnum::UNSIGNED,
+                            sign_enum,
                             CompEnum::Ascii,
                             DecimalTypeEnum::AssumedPointRight,
                             right,
@@ -148,6 +153,14 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
         }
         _ => unreachable!("Undefined data type rule in rule parser"),
     }
+}
+
+fn inner_data_type_rule_into_sign_enum(sub_data_type: Pair<Rule>) -> SignEnum {
+    // When the numeric type contains a SignRule set to SIGNED, The signed rule is not required
+    // by the grammar so it should default to unsigned if it does not exist.
+    sub_data_type.into_inner()
+        .find(|numeric_sub_pair| numeric_sub_pair.as_rule() == Rule::signed)
+        .map_or_else(|| SignEnum::UNSIGNED, |_| SignEnum::SIGNED)
 }
 
 fn group_rule_into_definition(group: Pair<Rule>, level: u32) -> copybook::GroupDefinition {
@@ -202,6 +215,7 @@ pub fn map_rule_to_name(rule: &Rule) -> &'static str {
         Rule::implied_decimal_point => "implied_decimal_point",
         Rule::assumed_decimal_point_left => "implied_decimal_point_left",
         Rule::assumed_decimal_point_right => "implied_decimal_point_right",
+        Rule::signed => "signed",
         Rule::field => "field",
         Rule::group => "group",
         Rule::statement => "statement",
@@ -294,12 +308,14 @@ mod tests {
         "PIC 9(2)",
         "PIC 999",
         "PIC 9(20)",
+        "PIC S9(2)"
     }, expected_type = {
         DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, CompEnum::Ascii)),
         DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, CompEnum::Ascii)),
         DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, CompEnum::Ascii)),
+        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::SIGNED, CompEnum::Ascii)),
     })]
-    fn should_parse_decimal_types(copybook_str: &str, expected_type: DataTypeEnum) {
+    fn should_parse_number_types(copybook_str: &str, expected_type: DataTypeEnum) {
         let result = CopybookPestParser::parse(Rule::data_type, copybook_str);
         assert!(result.is_ok());
 
@@ -312,14 +328,16 @@ mod tests {
         "PIC 9(3)V9(2)",
         "PIC 9(1).9(5)",
         "PIC P(3)9(2)",
-        "PIC 9(2)P(3)"
+        "PIC 9(2)P(3)",
+        "PIC S9(2)P(3)"
     }, expected_type = {
         DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, CompEnum::Ascii, DecimalTypeEnum::ImpliedPoint, 3u32)),
         DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, CompEnum::Ascii, DecimalTypeEnum::ImpliedPoint, 1u32)),
         DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, CompEnum::Ascii, DecimalTypeEnum::AssumedPointLeft, 3u32)),
         DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, CompEnum::Ascii, DecimalTypeEnum::AssumedPointRight, 3u32)),
+        DataTypeEnum::Decimal(Decimal::new(SignEnum::SIGNED, CompEnum::Ascii, DecimalTypeEnum::AssumedPointRight, 3u32)),
     })]
-    fn should_parse_number_types(copybook_str: &str, expected_type:DataTypeEnum) {
+    fn should_parse_decimal_types(copybook_str: &str, expected_type:DataTypeEnum) {
         let result = CopybookPestParser::parse(Rule::data_type, copybook_str);
         assert!(result.is_ok());
 

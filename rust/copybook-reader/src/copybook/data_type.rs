@@ -29,6 +29,7 @@ pub enum SignEnum {
 
     // An unsigned numerical data type will not track whether the value is positive or negative.
     UNSIGNED,
+    //TODO does sign effect field length?
 }
 
 // Computational types are stored in a binary format. COBOL typically stores all data types in an
@@ -40,6 +41,7 @@ pub enum CompEnum {
     Comp1,
     Comp2,
     Comp3,
+    //TODO does Comp effect field length?
 }
 
 // COBOL has three forms of decimals types that can be used to represent numbers with

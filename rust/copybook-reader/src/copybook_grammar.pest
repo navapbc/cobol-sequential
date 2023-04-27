@@ -74,17 +74,23 @@ alphanumeric_type = {
 }
 
 numeric_type = {
-    // Numeric types always start with 9 but since the length_literal rule needs the
+    // numeric types can be signed by providing a S prefix, by default numeric types are unsigned.
+    signed?
+    // Numeric types are identified with a 9 but since the length_literal rule needs the
     // 9 to operate correctly we are not going to consume the character.
-    &"9"
+    ~ &"9"
     ~ length_literal
 }
 
 decimal_type = {
-    // implied decimal point formats
-    implied_decimal_point
-    | assumed_decimal_point_left
-    | assumed_decimal_point_right
+    // decimal types can be signed by providing a S prefix, by default decimal types are unsigned.
+    signed?
+    // the decimal must match one of the formats below
+    ~ (
+        implied_decimal_point
+        | assumed_decimal_point_left
+        | assumed_decimal_point_right
+    )
 }
 
 // Implied Decimal points indicate the exact position of the decimal with either a
@@ -113,6 +119,10 @@ assumed_decimal_point_right = {
     ~ length_literal
     ~ &"P"
     ~ length_literal
+}
+
+signed = {
+    "S"
 }
 
 field = {
