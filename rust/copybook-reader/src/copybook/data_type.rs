@@ -12,7 +12,7 @@ pub enum DataTypeEnum {
     AlphaNumeric,
 
     // Number fields contain whole numbers. In COBOL these may be referenced as 9() or 999.
-    Number(),
+    Number(Number),
 
     // Decimal fields in COBOL allow you to store approximate values for small fractional values or
     // very large whole numbers without using as many bytes as you would need to store an exact value.
@@ -96,6 +96,7 @@ pub struct Decimal {
 }
 
 // The Number helps define the attributes required to understand and use a Cobol Number Field.
+#[derive(AllArgsConstructor, Debug, Clone, PartialEq)]
 pub struct Number {
     // The sign of the Number Field.
     sign: SignEnum,

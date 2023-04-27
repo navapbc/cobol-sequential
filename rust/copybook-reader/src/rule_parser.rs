@@ -81,14 +81,13 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
             let length_literal_pair = subtype_inner.next().unwrap();
             let length = length_literal_rule_into_u32(length_literal_pair);
 
-            (length, DataTypeEnum::Number())
+            (length, DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, CompEnum::Ascii)))
         }
         Rule::decimal_type => {
             // Since there are multiple types of decimals there will always be at least one inner
             // pair that distinguishes the decimal types
             let decimal_point_type = subtype_pair.into_inner().next().unwrap();
 
-            //TODO test content of data type
             match decimal_point_type.as_rule() {
                 Rule::implied_decimal_point => {
                     let mut decimal_point_type_inner = decimal_point_type.into_inner();
@@ -289,6 +288,44 @@ mod tests {
         let data_type_pair = result.unwrap().next().unwrap();
         let length_and_type = data_type_rule_into_length_and_type(data_type_pair);
         assert_eq!(length_and_type.0, expected_length);
+    }
+
+    #[parameterized(copybook_str = {
+        "PIC 9(2)",
+        "PIC 999",
+        "PIC 9(20)",
+    }, expected_type = {
+        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, CompEnum::Ascii)),
+        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, CompEnum::Ascii)),
+        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, CompEnum::Ascii)),
+    })]
+    fn should_parse_decimal_types(copybook_str: &str, expected_type: DataTypeEnum) {
+        let result = CopybookPestParser::parse(Rule::data_type, copybook_str);
+        assert!(result.is_ok());
+
+        let data_type_pair = result.unwrap().next().unwrap();
+        let length_and_type = data_type_rule_into_length_and_type(data_type_pair);
+        assert_eq!(length_and_type.1, expected_type);
+    }
+
+    #[parameterized(copybook_str = {
+        "PIC 9(3)V9(2)",
+        "PIC 9(1).9(5)",
+        "PIC P(3)9(2)",
+        "PIC 9(2)P(3)"
+    }, expected_type = {
+        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, CompEnum::Ascii, DecimalTypeEnum::ImpliedPoint, 3u32)),
+        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, CompEnum::Ascii, DecimalTypeEnum::ImpliedPoint, 1u32)),
+        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, CompEnum::Ascii, DecimalTypeEnum::AssumedPointLeft, 3u32)),
+        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, CompEnum::Ascii, DecimalTypeEnum::AssumedPointRight, 3u32)),
+    })]
+    fn should_parse_number_types(copybook_str: &str, expected_type:DataTypeEnum) {
+        let result = CopybookPestParser::parse(Rule::data_type, copybook_str);
+        assert!(result.is_ok());
+
+        let data_type_pair = result.unwrap().next().unwrap();
+        let length_and_type = data_type_rule_into_length_and_type(data_type_pair);
+        assert_eq!(length_and_type.1, expected_type);
     }
 
     #[parameterized(copybook_str = {
