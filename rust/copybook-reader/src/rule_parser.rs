@@ -16,7 +16,7 @@ fn field_rule_into_definition(field_rule: Pair<Rule>, level: u32) -> copybook::F
     let label: String = inner_field_rules.next().unwrap().as_str().to_owned();
 
     let data_type_rule = inner_field_rules.next().unwrap();
-    let length_and_data_type = get_length_and_type_from_rule(data_type_rule);
+    let length_and_data_type = data_type_rule_into_length_and_type(data_type_rule);
 
     copybook::FieldDefinition::new(
         level,
@@ -26,7 +26,36 @@ fn field_rule_into_definition(field_rule: Pair<Rule>, level: u32) -> copybook::F
     )
 }
 
-fn get_length_and_type_from_rule(data_type_pair: Pair<Rule>) -> (u32, DataTypeEnum) {
+fn length_literal_rule_into_u32(length_literal_pair: Pair<Rule>) -> u32 {
+    let length_literal_span = length_literal_pair.as_span();
+    // Based on the grammar a length literal pair should always have at least 1 inner pair
+    // but it could be a alpha-numeric character or an integer.
+    let maybe_length_pair = length_literal_pair.into_inner().next();
+
+    match maybe_length_pair {
+        None => {
+            // When the copybook does not explicitly define the length in the format
+            // 9(<length>) then we should assume that the length is implicitly defined by
+            // repeating the value 9 for each digit in the number. For example if the PIC clause
+            // is 999 the length of the field should be 3.
+            
+            // Since the grammar guarantees that there are no other values in the matched
+            // string besides 9 we can assume that the length of the data type is the length
+            // of the matched string.
+
+            //TODO is a usize better than u32?
+            (length_literal_span.end() - length_literal_span.start()).try_into().unwrap()
+
+        }
+        Some(explicit_length_pair) => {
+            explicit_length_pair.as_str()
+                .parse()
+                .unwrap()
+        }
+    }
+}
+
+fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, DataTypeEnum) {
     // The data_type rule should always contain 1 inner rule that identifies the actual type
     // and carries extra information about that specific data type.
     let subtype_pair = data_type_pair.into_inner().next().unwrap();
@@ -37,58 +66,16 @@ fn get_length_and_type_from_rule(data_type_pair: Pair<Rule>) -> (u32, DataTypeEn
         Rule::alphanumeric_type => {
             let mut subtype_inner = subtype_pair.into_inner();
 
-            //TODO is this repetitive? is there a way to refactor this?
-            let maybe_length_pair = subtype_inner.next();
-            let length: u32 = match maybe_length_pair {
-                None => {
-                    // When the copybook does not explicitly define the length in the format
-                    // 9(<length>) then we should assume that the length is implicitly defined by
-                    // repeating the value 9 for each digit in the number. For example if the PIC clause
-                    // is 999 the length of the field should be 3.
-                    
-                    // Since the grammar guarantees that there are no other values in the matched
-                    // string besides 9 we can assume that the length of the data type is the length
-                    // of the matched string.
-
-                    //TODO is a usize better than u32?
-                    (subtype_span.end() - subtype_span.start()).try_into().unwrap()
-
-                }
-                Some(explicit_length_pair) => {
-                    explicit_length_pair.as_str()
-                        .parse()
-                        .unwrap_or_else(|error| panic!("field length should have been an unsigned integer based on grammar: {error}"))
-                }
-            };
+            let length_literal_pair = subtype_inner.next().unwrap();
+            let length = length_literal_rule_into_u32(length_literal_pair);
 
             (length, DataTypeEnum::AlphaNumeric)
         }
         Rule::numeric_type => {
             let mut subtype_inner = subtype_pair.into_inner();
 
-            //TODO is this repetitive? is there a way to refactor this?
-            let maybe_length_pair = subtype_inner.next();
-            let length: u32 = match maybe_length_pair {
-                None => {
-                    // When the copybook does not explicitly define the length in the format
-                    // 9(<length>) then we should assume that the length is implicitly defined by
-                    // repeating the value 9 for each digit in the number. For example if the PIC clause
-                    // is 999 the length of the field should be 3.
-                    
-                    // Since the grammar guarantees that there are no other values in the matched
-                    // string besides 9 we can assume that the length of the data type is the length
-                    // of the matched string.
-
-                    //TODO is a usize better than u32?
-                    (subtype_span.end() - subtype_span.start()).try_into().unwrap()
-
-                }
-                Some(explicit_length_pair) => {
-                    explicit_length_pair.as_str()
-                        .parse()
-                        .unwrap_or_else(|error| panic!("field length should have been an unsigned integer based on grammar: {error}"))
-                }
-            };
+            let length_literal_pair = subtype_inner.next().unwrap();
+            let length = length_literal_rule_into_u32(length_literal_pair);
 
             (length, DataTypeEnum::Number())
         }
@@ -140,6 +127,7 @@ pub fn map_rule_to_name(rule: &Rule) -> &'static str {
         Rule::label => "label",
         Rule::data_type => "data_type",
         Rule::integer => "integer",
+        Rule::length_literal => "length_literal",
         Rule::alphanumeric_type => "alphanumeric_type",
         Rule::numeric_type => "numeric_type",
         Rule::field => "field",
@@ -212,7 +200,7 @@ mod tests {
         assert!(result.is_ok());
 
         let data_type_pair = result.unwrap().next().unwrap();
-        let length_and_type = get_length_and_type_from_rule(data_type_pair);
+        let length_and_type = data_type_rule_into_length_and_type(data_type_pair);
         assert_eq!(length_and_type.0, expected_length);
     }
 

@@ -34,24 +34,41 @@ data_type = {
     )
 }
 
-alphanumeric_type = {
-    "X"
+// This rule is mean to match patterns in the copybook such as "9(2)", "99", or "X(4)" in such a
+// way that if the parenthesis form is used the integer length value can be extracted or if the
+// repeated 9 or X form is used the number of repetitions can be extracted. This rule is not meant
+// to identify whether a 9, X, or V clause is being used that must be matched before this rule
+// without making progress with the & terminal.
+length_literal = {
+    // match the first character and push it onto the stack to be referenced later
+    PUSH(ASCII_ALPHANUMERIC)
     ~ (
-        // Supports alpha-numeric data type format X(100)
-        ("(" ~ integer ~ ")")
-        // Supports alpha-numeric data type format XXXXX
-        | ("X"*)
+        // Matches the parenthesis form which is expected to contain an integer value.
+        (
+            "("
+            ~ integer
+            ~ ")"
+        )
+        // Matches the repeatedSupports the numeric data type format 9999
+        | ( PEEK* )
     )
+    // Since the character is not needed outside of this rule we are going to drop it from the
+    // stack to be safe. Dropped stack characters are not required to be matched.
+    ~ DROP
 }
 
 numeric_type = {
-    "9"
-    ~ (
-        // Supports the numeric data type format 9(100)
-        ("(" ~ integer ~ ")")
-        // Supports the numeric data type format 9999
-        | ( "9"* )
-    )
+    // Numeric types always start with 9 but since the length_literal rule needs the
+    // 9 to operate correctly we are not going to consume the character.
+    &"9"
+    ~ length_literal
+}
+
+alphanumeric_type = {
+    // alphanumeric types always start with X but since the length_literal rule needs the
+    // X to operate correctly we are not going to consume the character.
+    &"X"
+    ~ length_literal
 }
 
 field = {
