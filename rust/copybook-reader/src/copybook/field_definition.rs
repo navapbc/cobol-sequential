@@ -18,8 +18,11 @@ pub struct FieldDefinition {
     //  - cobol data types: https://www.tutorialspoint.com/cobol/cobol_data_types.htm
     //  - comp clause: https://www.techagilist.com/mainframe/usage-comp-declaration/
     //  - decimal point: https://www.mainframestechhelp.com/tutorials/cobol/assumed-decimal-point-data-type.htm
+    //  - sign overpunch: https://support.hpe.com/hpesc/public/docDisplay?docId=c02258569&docLocale=en_US
+    //  - floating types: https://www.cs.cornell.edu/~tomf/notes/cps104/floating.html
 
-    // The total length of the field.
+    // The total character length of the field as specified by the copybook. This may not
+    // match the byte size of comp fields.
     length: u32,
 
     // The data type for the field.
