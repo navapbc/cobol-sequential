@@ -21,20 +21,31 @@ pub struct FieldDefinition {
     //  - sign overpunch: https://support.hpe.com/hpesc/public/docDisplay?docId=c02258569&docLocale=en_US
     //  - floating types: https://www.cs.cornell.edu/~tomf/notes/cps104/floating.html
 
-    // The total character length of the field as specified by the copybook. This may not
-    // match the byte size of comp fields.
-    length: u32,
+    // The total character length of the field as specified by the copybook. This should not be
+    // treated as the byte-length of the field, although, in most cases it is the same. There are
+    // some binary encoded fields that do not have a character length and others that do not
+    // have a one-to-one mapping between character length and byte length where they are not the same.
+    maybe_char_count: Option<u32>,
 
     // The data type for the field.
     data_type: DataTypeEnum,
 }
 
 impl FieldDefinition {
-    pub fn new(level: u32, label: String, length: u32, data_type: DataTypeEnum) -> FieldDefinition {
+    pub fn new_with_count(level: u32, label: String, char_count: u32, data_type: DataTypeEnum) -> FieldDefinition {
         FieldDefinition {
             level,
             label,
-            length,
+            maybe_char_count: Some(char_count),
+            data_type,
+        }
+    }
+
+    pub fn new(level: u32, label: String, data_type: DataTypeEnum) -> FieldDefinition {
+        FieldDefinition {
+            level,
+            label,
+            maybe_char_count: None,
             data_type,
         }
     }
@@ -44,10 +55,10 @@ impl fmt::Display for FieldDefinition {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "FieldDefinition level={}, label={}, length={}",
+            "FieldDefinition level={}, label={}, char_count={}",
             self.get_level(),
             self.get_label(),
-            self.get_length(),
+            self.get_maybe_char_count().map_or(String::from("null"), |count| count.to_string()),
             //FIXME: implement display attribute for datatype
         )
     }

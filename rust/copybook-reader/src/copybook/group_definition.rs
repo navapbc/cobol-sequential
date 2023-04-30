@@ -113,7 +113,7 @@ mod tests {
         let original = GroupDefinition::create_with_statements(
             1u32,
             String::from("GROUP"),
-            vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
+            vec![StatementDefinition::FieldDefinition(FieldDefinition::new_with_count(
                 2u32,
                 String::from("ONE"),
                 5u32,
@@ -129,7 +129,7 @@ mod tests {
         let first = GroupDefinition::create_with_statements(
             1u32,
             String::from("GROUP"),
-            vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
+            vec![StatementDefinition::FieldDefinition(FieldDefinition::new_with_count(
                 2u32,
                 String::from("ONE"),
                 5u32,
@@ -141,13 +141,13 @@ mod tests {
             1u32,
             String::from("GROUP"),
             vec![
-                StatementDefinition::FieldDefinition(FieldDefinition::new(
+                StatementDefinition::FieldDefinition(FieldDefinition::new_with_count(
                     2u32,
                     String::from("ONE"),
                     5u32,
                     DataTypeEnum::AlphaNumeric,
                 )),
-                StatementDefinition::FieldDefinition(FieldDefinition::new(
+                StatementDefinition::FieldDefinition(FieldDefinition::new_with_count(
                     2u32,
                     String::from("TWO"),
                     5u32,
@@ -164,7 +164,7 @@ mod tests {
         let first = GroupDefinition::create_with_statements(
             1u32,
             String::from("GROUP"),
-            vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
+            vec![StatementDefinition::FieldDefinition(FieldDefinition::new_with_count(
                 2u32,
                 String::from("ONE"),
                 5u32,
@@ -175,7 +175,7 @@ mod tests {
         let second = GroupDefinition::create_with_statements(
             1u32,
             String::from("GROUP"),
-            vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
+            vec![StatementDefinition::FieldDefinition(FieldDefinition::new_with_count(
                 5u32, // different level
                 String::from("ONE"),
                 5u32,

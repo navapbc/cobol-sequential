@@ -4,7 +4,6 @@ use pest::iterators::Pairs;
 use pest::Parser;
 
 use crate::copybook;
-use crate::copybook::data_type::CompEnum;
 use crate::copybook::data_type::Decimal;
 use crate::copybook::data_type::DecimalTypeEnum;
 use crate::copybook::data_type::SignEnum;
@@ -22,7 +21,7 @@ fn field_rule_into_definition(field_rule: Pair<Rule>, level: u32) -> copybook::F
     let data_type_rule = inner_field_rules.next().unwrap();
     let length_and_data_type = data_type_rule_into_length_and_type(data_type_rule);
 
-    copybook::FieldDefinition::new(level, label, length_and_data_type.0, length_and_data_type.1)
+    copybook::FieldDefinition::new_with_count(level, label, length_and_data_type.0, length_and_data_type.1)
 }
 
 fn length_literal_rule_into_u32(length_literal_pair: Pair<Rule>) -> u32 {
@@ -84,7 +83,7 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                 .unwrap();
             let length = length_literal_rule_into_u32(length_literal_pair);
 
-            (length, DataTypeEnum::Number(copybook::data_type::Number::new(sign_enum, CompEnum::Ascii)))
+            (length, DataTypeEnum::Number(copybook::data_type::Number::new(sign_enum, false)))
         }
         Rule::decimal_type => {
             let sign_enum = inner_data_type_rule_into_sign_enum(subtype_pair.clone());
@@ -106,9 +105,9 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                         left + right,
                         DataTypeEnum::Decimal(Decimal::new(
                             sign_enum,
-                            CompEnum::Ascii,
                             DecimalTypeEnum::ImpliedPoint,
                             left,
+                            false,
                         )),
                     )
                 }
@@ -124,9 +123,9 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                         right,
                         DataTypeEnum::Decimal(Decimal::new(
                             sign_enum,
-                            CompEnum::Ascii,
                             DecimalTypeEnum::AssumedPointLeft,
                             left,
+                            false,
                         )),
                     )
                 }
@@ -142,9 +141,9 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                         left,
                         DataTypeEnum::Decimal(Decimal::new(
                             sign_enum,
-                            CompEnum::Ascii,
                             DecimalTypeEnum::AssumedPointRight,
                             right,
+                            false,
                         )),
                     )
                 }
@@ -259,7 +258,7 @@ mod tests {
 
         assert_eq!(*field_definition.get_level(), 1u32);
         assert_eq!(field_definition.get_label(), "FIELDNAME");
-        assert_eq!(*field_definition.get_length(), 5u32);
+        assert_eq!(field_definition.get_maybe_char_count().unwrap(), 5u32);
 
         let data_type = field_definition.get_data_type();
         match data_type {
@@ -310,10 +309,10 @@ mod tests {
         "PIC 9(20)",
         "PIC S9(2)"
     }, expected_type = {
-        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, CompEnum::Ascii)),
-        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, CompEnum::Ascii)),
-        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, CompEnum::Ascii)),
-        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::SIGNED, CompEnum::Ascii)),
+        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, false)),
+        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, false)),
+        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, false)),
+        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::SIGNED, false)),
     })]
     fn should_parse_number_types(copybook_str: &str, expected_type: DataTypeEnum) {
         let result = CopybookPestParser::parse(Rule::data_type, copybook_str);
@@ -331,11 +330,11 @@ mod tests {
         "PIC 9(2)P(3)",
         "PIC S9(2)P(3)"
     }, expected_type = {
-        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, CompEnum::Ascii, DecimalTypeEnum::ImpliedPoint, 3u32)),
-        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, CompEnum::Ascii, DecimalTypeEnum::ImpliedPoint, 1u32)),
-        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, CompEnum::Ascii, DecimalTypeEnum::AssumedPointLeft, 3u32)),
-        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, CompEnum::Ascii, DecimalTypeEnum::AssumedPointRight, 3u32)),
-        DataTypeEnum::Decimal(Decimal::new(SignEnum::SIGNED, CompEnum::Ascii, DecimalTypeEnum::AssumedPointRight, 3u32)),
+        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED,  DecimalTypeEnum::ImpliedPoint, 3u32, false)),
+        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED,  DecimalTypeEnum::ImpliedPoint, 1u32, false)),
+        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, DecimalTypeEnum::AssumedPointLeft, 3u32, false)),
+        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED,  DecimalTypeEnum::AssumedPointRight, 3u32, false)),
+        DataTypeEnum::Decimal(Decimal::new(SignEnum::SIGNED,  DecimalTypeEnum::AssumedPointRight, 3u32, false)),
     })]
     fn should_parse_decimal_types(copybook_str: &str, expected_type:DataTypeEnum) {
         let result = CopybookPestParser::parse(Rule::data_type, copybook_str);

@@ -18,6 +18,24 @@ pub enum DataTypeEnum {
     // very large whole numbers without using as many bytes as you would need to store an exact value.
     // In COBOL these may be referenced as 9()V9(), 9().9(), or P()V()
     Decimal(Decimal),
+
+
+    //TODO parse comp1,comp2, and comp3 types
+    // The COMP-1 type stores a single-precision floating-point number in binary format. The
+    // representation should be similiar to https://www.cs.cornell.edu/~tomf/notes/cps104/floating.html
+    // and should always be 4 bytes in length and is always signed. In Cobol this data type is not
+    // allowed to have a PIC clause and may be defined as 01 FIELDNAME COMP-1.
+    Comp1,
+
+    // The COMP-2 type is a double-precision floating-point number in binary format. This should
+    // work similarly to a COMP-1 but instead requires 8 bytes.
+    Comp2,
+
+    // The COMP-3 type is a signed integer stored in a compressed binary format. Each digit is stored
+    //  as a half a byte or a nibble. The sign is always stored in the right most nibble where
+    // "1100" is positive and "1101" is negative. In a copybook this field type is typically
+    // defined as 01 FIELDNAME PIC 9(n) COMP-3. The total byte size = ceil(n/2).
+    Comp3
 }
 
 // The data type sign identifies if a numerical data type is allowed to be negative or can only be positive.
@@ -34,52 +52,6 @@ pub enum SignEnum {
     // An unsigned numerical data type will not track whether the value is positive or negative.
     UNSIGNED,
 }
-
-// Computational types are stored in a binary format. COBOL typically stores all data types in an
-// ASCII format meaning that the number 12 requires 2 bytes of space. But because computational
-// types are stored in binary they can be more compressed.
-#[derive(Debug, Clone, PartialEq)]
-pub enum CompEnum {
-    Ascii, //TODO this does not make sense
-
-    // Comp stores data in hexadecimal format. This does change the total number of bytes required
-    // for the field. For example, if you have a field defined as PIC 9(n) COMP
-    //      if n is between 1 to 4 then the field will require 2 bytes
-    //      if n is between 5 to 9 then the field will require 4 bytes
-    //      if n is between 10 to 18 then the field will require 8 bytes
-    // This does enable the value 1234567 to be stored as hexadecimal "0012 d687"
-    // A PIC clause is required for this type.
-    // can be signed or unsigned
-    Comp,
-    // Comp-1 stores a single-precision floating-point number in hexadecimal format. this field is always 4 bytes. 
-    // See https://www.cs.cornell.edu/~tomf/notes/cps104/floating.html for more details
-    // NOTE: the syntax is werider here than I thought. Cobol expects there to be no PIC clause or a length literal.
-    // So the correct way to define a Comp-1 field is literally just "02 UID COMP-1"
-    Comp1,
-    // Comp-2 stores a double precision floating point number in hexadecimal format. this field is always 8 bytes.
-    // no pic clause allowed.
-    Comp2,
-    // Comp-3 always signed, pic clause is required. must be signed. Cannot have a V.
-    // In Comp-3 each digit represents half a byte (nibble). The sign is always stored in the right most nibble.
-    // A negative sign is represented as 1101 and positive is 1100.
-    // byte size = ceil(n/2)
-    Comp3,
-}
-
-//TODO modeling notes:
-// so the comp shouldn't be modeled this way because the required syntax is different the byte sizes vary
-// which makes this current approach awkward.
-// 
-// I think the way to go is a comp struct in the data type enum.
-// struct comp
-//  - comp_type
-//  - sign
-//
-// this does mean that the field length does not always match the byte size which could make things
-// so it may make sense to rename the field length to character length and either make the character
-// length specific to the type or optional.
-// I don't think its a good idea to derive the byte size because it may be different on different machines
-// and so it's getting a little bit too far away from modeling the copybook.
 
 // COBOL has three forms of decimals types that can be used to represent numbers with
 // fractional parts, extremely small fractional parts, or extremely large numbers.
@@ -119,9 +91,6 @@ pub struct Decimal {
     // The sign of the Decimal Field.
     sign: SignEnum,
 
-    // The Computational Format that this field is stored in.
-    comp: CompEnum,
-
     // Which variation of the cobol decimal type this field is.
     decimal_type: DecimalTypeEnum,
 
@@ -132,6 +101,13 @@ pub struct Decimal {
     //  For [DecimalType::AssumedPointLeft] this is the number of assumed digits to the right of the decimal point.
     //  For [DecimalType::AssumedPointRight] this is the number of assumed digits to the left of the decimal point.
     point_position: u32,
+
+    // When a Number is stored in COMP format it will be represented as a binary number instead
+    // of characters. In the copybook these fields are defined as PIC 9(n)V(m) COMP. The byte-length
+    // of these fields depend on the character length provided (n and m) in the PIC clause and the
+    // mapping utilized by the cobol compiler.
+    //TODO parse this
+    isSimpleBinary: bool,
 }
 
 // The Number helps define the attributes required to understand and use a Cobol Number Field.
@@ -140,6 +116,10 @@ pub struct Number {
     // The sign of the Number Field.
     sign: SignEnum,
 
-    // The Computational Format that this field is stored in.
-    comp: CompEnum,
+    // When a Number is stored in COMP format it will be represented as a binary number instead
+    // of characters. In the copybook these fields are defined as PIC 9(n) COMP. The byte-length
+    // of these fields depend on the character length provided in the PIC clause and the mapping
+    // utilized by the cobol compiler. Typically this mapping could be something like
+    // n=1-4, size=2 bytes; n=5-9, size=4 bytes; n=10-18, size=8 bytes
+    isSimpleBinary: bool,
 }
