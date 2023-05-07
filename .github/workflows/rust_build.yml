@@ -3,7 +3,7 @@ name: Rust Build
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "14/copybook-data-type-support"]
   pull_request:
     branches: ["main"]
     paths:
