@@ -21,6 +21,26 @@ impl CopybookDefinition {
     pub fn add_statement(&mut self, statement_definition: StatementDefinition) {
         self.statements.push(statement_definition);
     }
+
+    // Formats a StatementDefinition with indentation
+    fn fmt_statement_with_depth(
+        &self,
+        f: &mut fmt::Formatter,
+        statement: &StatementDefinition,
+        depth: usize,
+    ) {
+        match statement {
+            StatementDefinition::GroupDefinition(group) => {
+                let _ = writeln!(f, "{}{}", " ".repeat(2usize * depth), group);
+                for sub_statement in group.get_statements() {
+                    self.fmt_statement_with_depth(f, sub_statement, depth + 1);
+                }
+            }
+            StatementDefinition::FieldDefinition(field) => {
+                let _ = writeln!(f, "{}{}", " ".repeat(2usize * depth), field);
+            }
+        }
+    }
 }
 
 impl PartialEq for CopybookDefinition {
@@ -49,8 +69,8 @@ impl Clone for CopybookDefinition {
 impl fmt::Display for CopybookDefinition {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let _ = writeln!(f, "CopybookDefinition:");
-        for group in self.get_statements() {
-            let _ = writeln!(f, "  {}", group);
+        for statement in self.get_statements() {
+            self.fmt_statement_with_depth(f, statement, 1);
         }
         writeln!(f)
     }

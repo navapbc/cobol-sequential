@@ -84,20 +84,12 @@ impl Clone for GroupDefinition {
 
 impl fmt::Display for GroupDefinition {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let _ = writeln!(
-            f,
-            "GroupDefinition level={}, label={}:",
-            self.get_level(),
-            self.get_label()
-        );
-        for statement in self.get_statements() {
-            let _ = writeln!(f, "  {}", statement);
-        }
         write!(
             f,
-            "GroupDefinition End level={} label={}",
+            "GroupDefinition level={}, label={}, statements={}",
             self.get_level(),
-            self.get_label()
+            self.get_label(),
+            self.get_statements().len()
         )
     }
 }
