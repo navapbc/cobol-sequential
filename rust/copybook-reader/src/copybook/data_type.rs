@@ -19,7 +19,6 @@ pub enum DataTypeEnum {
     // In COBOL these may be referenced as 9()V9(), 9().9(), or P()V()
     Decimal(Decimal),
 
-    //TODO parse comp1,comp2, and comp3 types
     // The COMP-1 type stores a single-precision floating-point number in binary format. The
     // representation should be similiar to https://www.cs.cornell.edu/~tomf/notes/cps104/floating.html
     // and should always be 4 bytes in length and is always signed. In Cobol this data type is not
@@ -105,7 +104,6 @@ pub struct Decimal {
     // of characters. In the copybook these fields are defined as PIC 9(n)V(m) COMP. The byte-length
     // of these fields depend on the character length provided (n and m) in the PIC clause and the
     // mapping utilized by the cobol compiler.
-    //TODO parse this
     is_simple_binary: bool,
 }
 
