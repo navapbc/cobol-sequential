@@ -69,14 +69,12 @@ mod tests {
                 GroupDefinition::create_with_statements(
                     1u32,
                     String::from("TOP-LEVEL"),
-                    vec![StatementDefinition::FieldDefinition(
-                        FieldDefinition::new_with_count(
-                            2u32,
-                            String::from("ONE"),
-                            5u32,
-                            DataTypeEnum::AlphaNumeric,
-                        ),
-                    )],
+                    vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
+                        2u32,
+                        String::from("ONE"),
+                        Some(5u32),
+                        DataTypeEnum::AlphaNumeric,
+                    ))],
                 ),
             )]);
 

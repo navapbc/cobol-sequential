@@ -71,16 +71,16 @@ mod rule_parser;
 ///         1u32,
 ///         String::from("RECORD"),
 ///         vec![
-///             StatementDefinition::FieldDefinition(FieldDefinition::new_with_count(
+///             StatementDefinition::FieldDefinition(FieldDefinition::new(
 ///                 2u32,
 ///                 String::from("FIRST-FIELD"),
-///                 5u32,
+///                 Some(5u32),
 ///                 DataTypeEnum::AlphaNumeric,
 ///             )),
-///             StatementDefinition::FieldDefinition(FieldDefinition::new_with_count(
+///             StatementDefinition::FieldDefinition(FieldDefinition::new(
 ///                 2u32,
 ///                 String::from("SECOND-FIELD"),
-///                 5u32,
+///                 Some(5u32),
 ///                 DataTypeEnum::AlphaNumeric,
 ///             )),
 ///         ],
@@ -290,14 +290,12 @@ mod tests {
         match parse_result {
             Ok(copybook_definition) => {
                 let expected_copybook = copybook::CopybookDefinition::create_with_statements(vec![
-                    copybook::StatementDefinition::FieldDefinition(
-                        copybook::FieldDefinition::new_with_count(
-                            1u32,
-                            String::from("FIELDNAME"),
-                            5u32,
-                            DataTypeEnum::AlphaNumeric,
-                        ),
-                    ),
+                    copybook::StatementDefinition::FieldDefinition(copybook::FieldDefinition::new(
+                        1u32,
+                        String::from("FIELDNAME"),
+                        Some(5u32),
+                        DataTypeEnum::AlphaNumeric,
+                    )),
                 ]);
                 assert_eq!(copybook_definition, expected_copybook);
             }
@@ -324,18 +322,18 @@ mod tests {
                             String::from("GROUPNAME"),
                             vec![
                                 copybook::StatementDefinition::FieldDefinition(
-                                    copybook::FieldDefinition::new_with_count(
+                                    copybook::FieldDefinition::new(
                                         5u32,
                                         String::from("FIRSTFIELD"),
-                                        5u32,
+                                        Some(5u32),
                                         DataTypeEnum::AlphaNumeric,
                                     ),
                                 ),
                                 copybook::StatementDefinition::FieldDefinition(
-                                    copybook::FieldDefinition::new_with_count(
+                                    copybook::FieldDefinition::new(
                                         5u32,
                                         String::from("SECONDFIELD"),
-                                        5u32,
+                                        Some(5u32),
                                         DataTypeEnum::AlphaNumeric,
                                     ),
                                 ),
@@ -374,18 +372,18 @@ mod tests {
                             String::from("GROUPONE"),
                             vec![
                                 copybook::StatementDefinition::FieldDefinition(
-                                    copybook::FieldDefinition::new_with_count(
+                                    copybook::FieldDefinition::new(
                                         5u32,
                                         String::from("FIRSTFIELD"),
-                                        5u32,
+                                        Some(5u32),
                                         DataTypeEnum::AlphaNumeric,
                                     ),
                                 ),
                                 copybook::StatementDefinition::FieldDefinition(
-                                    copybook::FieldDefinition::new_with_count(
+                                    copybook::FieldDefinition::new(
                                         5u32,
                                         String::from("SECONDFIELD"),
-                                        5u32,
+                                        Some(5u32),
                                         DataTypeEnum::AlphaNumeric,
                                     ),
                                 ),
@@ -394,20 +392,20 @@ mod tests {
                                         5u32,
                                         String::from("GROUPTWO"),
                                         vec![copybook::StatementDefinition::FieldDefinition(
-                                            copybook::FieldDefinition::new_with_count(
+                                            copybook::FieldDefinition::new(
                                                 10u32,
                                                 String::from("THIRDFIELD"),
-                                                1u32,
+                                                Some(1u32),
                                                 DataTypeEnum::AlphaNumeric,
                                             ),
                                         )],
                                     ),
                                 ),
                                 copybook::StatementDefinition::FieldDefinition(
-                                    copybook::FieldDefinition::new_with_count(
+                                    copybook::FieldDefinition::new(
                                         5u32,
                                         String::from("FOURTHFIELD"),
-                                        1u32,
+                                        Some(1u32),
                                         DataTypeEnum::AlphaNumeric,
                                     ),
                                 ),
@@ -419,10 +417,10 @@ mod tests {
                             1u32,
                             String::from("GROUPTHREE"),
                             vec![copybook::StatementDefinition::FieldDefinition(
-                                copybook::FieldDefinition::new_with_count(
+                                copybook::FieldDefinition::new(
                                     5u32,
                                     String::from("FIFTHFIELD"),
-                                    9u32,
+                                    Some(9u32),
                                     DataTypeEnum::AlphaNumeric,
                                 ),
                             )],
@@ -510,10 +508,10 @@ mod tests {
                             1u32,
                             String::from("GROUPONE"),
                             vec![copybook::StatementDefinition::FieldDefinition(
-                                copybook::FieldDefinition::new_with_count(
+                                copybook::FieldDefinition::new(
                                     5u32,
                                     String::from("FIRSTFIELD"),
-                                    5u32,
+                                    Some(5u32),
                                     DataTypeEnum::AlphaNumeric,
                                 ),
                             )],

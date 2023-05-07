@@ -32,20 +32,6 @@ pub struct FieldDefinition {
 }
 
 impl FieldDefinition {
-    pub fn new_with_count(
-        level: u32,
-        label: String,
-        char_count: u32,
-        data_type: DataTypeEnum,
-    ) -> FieldDefinition {
-        FieldDefinition {
-            level,
-            label,
-            maybe_char_count: Some(char_count),
-            data_type,
-        }
-    }
-
     pub fn new(
         level: u32,
         label: String,
@@ -70,7 +56,7 @@ impl fmt::Display for FieldDefinition {
             self.get_label(),
             self.get_maybe_char_count()
                 .map_or(String::from("null"), |count| count.to_string()),
-            self.get_data_type(), //FIXME: implement display attribute for datatype
+            self.get_data_type(),
         )
     }
 }

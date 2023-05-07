@@ -1,3 +1,5 @@
+use std::fmt;
+
 use pest::error::Error;
 use pest::iterators::Pair;
 use pest::iterators::Pairs;
@@ -217,33 +219,12 @@ pub fn string_into_file_rule(copybook_str: &str) -> Result<Pairs<Rule>, Box<Erro
     }
 }
 
-pub fn map_rule_to_name(rule: &Rule) -> &'static str {
-    match rule {
-        Rule::EOI => "EOI",
-        Rule::whitespace => "whitespace",
-        Rule::picture => "picture",
-        Rule::level => "level",
-        Rule::label => "label",
-        Rule::data_type => "data_type",
-        Rule::integer => "integer",
-        Rule::length_literal => "length_literal",
-        Rule::alphabetic_type => "alphabetic_type",
-        Rule::alphanumeric_type => "alphanumeric_type",
-        Rule::numeric_type => "numeric_type",
-        Rule::number_type => "number_type",
-        Rule::implied_decimal_point => "implied_decimal_point",
-        Rule::assumed_decimal_point_left => "assumed_decimal_point_left",
-        Rule::assumed_decimal_point_right => "assumed_decimal_point_right",
-        Rule::precision => "precision",
-        Rule::comp => "comp",
-        Rule::comp1_type => "comp1_type",
-        Rule::comp2_type => "comp2_type",
-        Rule::comp3_type => "comp3_type",
-        Rule::signed => "signed",
-        Rule::field => "field",
-        Rule::group => "group",
-        Rule::statement => "statement",
-        Rule::file => "file",
+impl fmt::Display for Rule {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // The debug trait for an enum will display a lot of extra info than the display trait
+        // needs when an enum variant is a struct. So to avoid that we are extracting only the
+        // enum variant name which comes before the first "(".
+        write!(f, "{}", format!("{:?}", self).split('(').next().unwrap())
     }
 }
 
@@ -445,5 +426,10 @@ mod tests {
             Ok(_) => unreachable!("this string should always be invalid"),
             Err(_) => assert!(true),
         }
+    }
+
+    #[test]
+    fn map_rule_to_name_should_match_variant_name() {
+        assert_eq!(Rule::data_type.to_string(), "data_type");
     }
 }

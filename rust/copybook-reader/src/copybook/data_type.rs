@@ -1,6 +1,4 @@
-//! A COBOL Copybook Data Type.
-//! This enum captures the top level types and the additional meta data as necessary for each data
-//! type.
+//! Structures and Enums used to model COBOL data types.
 
 use std::fmt;
 
@@ -10,7 +8,7 @@ pub enum DataTypeEnum {
     // Text fields that contain alphabetic values. In COBOL these may be referenced as A().
     Alphabetic,
 
-    // Text fields that contain alpha-numeric values. In COBOL htese may be referenced as X().
+    // Text fields that contain alpha-numeric values. In COBOL these may be referenced as X().
     AlphaNumeric,
 
     // Number fields contain whole numbers. In COBOL these may be referenced as 9() or 999.
@@ -43,7 +41,7 @@ impl fmt::Display for DataTypeEnum {
         // The debug trait for an enum will display a lot of extra info than the display trait
         // needs when an enum variant is a struct. So to avoid that we are extracting only the
         // enum variant name which comes before the first "(".
-        write!(f, "{}", format!("{:?}", self).split("(").next().unwrap())
+        write!(f, "{}", format!("{:?}", self).split('(').next().unwrap())
     }
 }
 
@@ -52,7 +50,6 @@ impl fmt::Display for DataTypeEnum {
 // artifact of programming with punch cards. In order to save space on the punch card for a negative
 // number the last digit will be overwritten with a letter that maps back to the original digit.
 // The existence of the letter typically indicates that the number was negative.
-//TODO test PartialEq
 #[derive(Debug, Clone, PartialEq)]
 pub enum SignEnum {
     // A signed numerical data type can have negative or positive values.
@@ -71,8 +68,8 @@ pub enum DecimalTypeEnum {
     // something like 9(6)V9(2). The V represents where the decimal point should go so the 9(6)
     // clause means that there can be 6 digits to the left of the decimal and the 9(2) clause
     // means that there can be 2 digits to the right of the decimal. The decimal point is
-    // considered implied because the decimal is typically not stored in the number. Cobol will
-    // just assume that the decimal point belongs after the sixth digit.
+    // considered implied because the decimal is typically not stored in the number. In the example
+    // above cobol will just assume that the decimal point belongs after the sixth digit.
     ImpliedPoint,
 
     // The Assumed Point Left decimal should only be used to represent extremely small numbers
