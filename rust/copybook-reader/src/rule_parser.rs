@@ -21,7 +21,12 @@ fn field_rule_into_definition(field_rule: Pair<Rule>, level: u32) -> copybook::F
     let data_type_rule = inner_field_rules.next().unwrap();
     let length_and_data_type = data_type_rule_into_length_and_type(data_type_rule);
 
-    copybook::FieldDefinition::new_with_count(level, label, length_and_data_type.0, length_and_data_type.1)
+    copybook::FieldDefinition::new_with_count(
+        level,
+        label,
+        length_and_data_type.0,
+        length_and_data_type.1,
+    )
 }
 
 fn length_literal_rule_into_u32(length_literal_pair: Pair<Rule>) -> u32 {
@@ -41,7 +46,6 @@ fn length_literal_rule_into_u32(length_literal_pair: Pair<Rule>) -> u32 {
             // string besides 9 we can assume that the length of the data type is the length
             // of the matched string.
 
-            //TODO is a usize better than u32?
             (length_literal_span.end() - length_literal_span.start())
                 .try_into()
                 .unwrap()
@@ -75,26 +79,26 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
             (length, DataTypeEnum::AlphaNumeric)
         }
         Rule::numeric_type => {
-            let sign_enum = inner_data_type_rule_into_sign_enum(subtype_pair.clone());
+            let is_simple_binary = inner_data_type_rule_has_comp(subtype_pair.clone());
 
-            // Every numeric type is guaranteed to have a length literal by the grammar
-            let length_literal_pair = subtype_pair.into_inner()
-                .last()
-                .unwrap();
-            let length = length_literal_rule_into_u32(length_literal_pair);
+            let mut subtype_inner = subtype_pair.into_inner();
+            let sign_enum = inner_data_type_rule_into_sign_enum(&mut subtype_inner);
 
-            (length, DataTypeEnum::Number(copybook::data_type::Number::new(sign_enum, false)))
-        }
-        Rule::decimal_type => {
-            let sign_enum = inner_data_type_rule_into_sign_enum(subtype_pair.clone());
-
-            // Since there are multiple types of decimals there will always be at least one inner
-            // pair that distinguishes the decimal types. This pair should always be last
-            let decimal_point_type = subtype_pair.into_inner().last().unwrap();
-
-            match decimal_point_type.as_rule() {
+            let decimal_or_number_pair = subtype_inner.next().unwrap();
+            match decimal_or_number_pair.as_rule() {
+                Rule::number_type => {
+                    let length_literal_pair = decimal_or_number_pair.into_inner().next().unwrap();
+                    let length = length_literal_rule_into_u32(length_literal_pair);
+                    (
+                        length,
+                        DataTypeEnum::Number(copybook::data_type::Number::new(
+                            sign_enum,
+                            is_simple_binary,
+                        )),
+                    )
+                }
                 Rule::implied_decimal_point => {
-                    let mut decimal_point_type_inner = decimal_point_type.into_inner();
+                    let mut decimal_point_type_inner = decimal_or_number_pair.into_inner();
 
                     let left: u32 =
                         length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
@@ -107,12 +111,12 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                             sign_enum,
                             DecimalTypeEnum::ImpliedPoint,
                             left,
-                            false,
+                            is_simple_binary,
                         )),
                     )
                 }
                 Rule::assumed_decimal_point_left => {
-                    let mut decimal_point_type_inner = decimal_point_type.into_inner();
+                    let mut decimal_point_type_inner = decimal_or_number_pair.into_inner();
 
                     let left: u32 =
                         length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
@@ -125,12 +129,12 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                             sign_enum,
                             DecimalTypeEnum::AssumedPointLeft,
                             left,
-                            false,
+                            is_simple_binary,
                         )),
                     )
                 }
                 Rule::assumed_decimal_point_right => {
-                    let mut decimal_point_type_inner = decimal_point_type.into_inner();
+                    let mut decimal_point_type_inner = decimal_or_number_pair.into_inner();
 
                     let left: u32 =
                         length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
@@ -143,23 +147,40 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                             sign_enum,
                             DecimalTypeEnum::AssumedPointRight,
                             right,
-                            false,
+                            is_simple_binary,
                         )),
                     )
                 }
-                _ => unreachable!("Undefined decimal point type"),
+                _ => unreachable!("Undefined numeric type in rule parser"),
             }
         }
         _ => unreachable!("Undefined data type rule in rule parser"),
     }
 }
 
-fn inner_data_type_rule_into_sign_enum(sub_data_type: Pair<Rule>) -> SignEnum {
-    // When the numeric type contains a SignRule set to SIGNED, The signed rule is not required
-    // by the grammar so it should default to unsigned if it does not exist.
-    sub_data_type.into_inner()
-        .find(|numeric_sub_pair| numeric_sub_pair.as_rule() == Rule::signed)
-        .map_or_else(|| SignEnum::UNSIGNED, |_| SignEnum::SIGNED)
+// Peeks at the first item in the Pairs Iterable to determine the Sign. If a sign was explicitly
+// specifies it moves the iterable forward.
+fn inner_data_type_rule_into_sign_enum(pair_inner_iter: &mut Pairs<Rule>) -> SignEnum {
+    match pair_inner_iter.peek() {
+        Some(first_pair) => {
+            if first_pair.as_rule() == Rule::signed {
+                pair_inner_iter.next();
+                return SignEnum::SIGNED;
+            } else {
+                return SignEnum::UNSIGNED;
+            }
+        }
+        None => SignEnum::UNSIGNED,
+    }
+}
+
+fn inner_data_type_rule_has_comp(sub_data_type: Pair<Rule>) -> bool {
+    // Some PIC data types are allowed to have a COMP clause, this method searches for the
+    // clause and returns true if it exists or false if it does not
+    sub_data_type
+        .into_inner()
+        .find(|numeric_sub_pair| numeric_sub_pair.as_rule() == Rule::comp)
+        .map_or(false, |_| true)
 }
 
 fn group_rule_into_definition(group: Pair<Rule>, level: u32) -> copybook::GroupDefinition {
@@ -210,10 +231,11 @@ pub fn map_rule_to_name(rule: &Rule) -> &'static str {
         Rule::alphabetic_type => "alphabetic_type",
         Rule::alphanumeric_type => "alphanumeric_type",
         Rule::numeric_type => "numeric_type",
-        Rule::decimal_type => "decimal_type",
+        Rule::number_type => "number_type",
         Rule::implied_decimal_point => "implied_decimal_point",
-        Rule::assumed_decimal_point_left => "implied_decimal_point_left",
-        Rule::assumed_decimal_point_right => "implied_decimal_point_right",
+        Rule::assumed_decimal_point_left => "assumed_decimal_point_left",
+        Rule::assumed_decimal_point_right => "assumed_decimal_point_right",
+        Rule::comp => "comp",
         Rule::signed => "signed",
         Rule::field => "field",
         Rule::group => "group",
@@ -307,12 +329,14 @@ mod tests {
         "PIC 9(2)",
         "PIC 999",
         "PIC 9(20)",
-        "PIC S9(2)"
+        "PIC S9(2)",
+        "PIC 9(7) COMP",
     }, expected_type = {
         DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, false)),
         DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, false)),
         DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, false)),
         DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::SIGNED, false)),
+        DataTypeEnum::Number(copybook::data_type::Number::new(SignEnum::UNSIGNED, true)),
     })]
     fn should_parse_number_types(copybook_str: &str, expected_type: DataTypeEnum) {
         let result = CopybookPestParser::parse(Rule::data_type, copybook_str);
@@ -328,15 +352,17 @@ mod tests {
         "PIC 9(1).9(5)",
         "PIC P(3)9(2)",
         "PIC 9(2)P(3)",
-        "PIC S9(2)P(3)"
+        "PIC S9(2)P(3)",
+        "PIC 9(2)P(3) COMP",
     }, expected_type = {
         DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED,  DecimalTypeEnum::ImpliedPoint, 3u32, false)),
         DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED,  DecimalTypeEnum::ImpliedPoint, 1u32, false)),
         DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED, DecimalTypeEnum::AssumedPointLeft, 3u32, false)),
         DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED,  DecimalTypeEnum::AssumedPointRight, 3u32, false)),
         DataTypeEnum::Decimal(Decimal::new(SignEnum::SIGNED,  DecimalTypeEnum::AssumedPointRight, 3u32, false)),
+        DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED,  DecimalTypeEnum::AssumedPointRight, 3u32, true)),
     })]
-    fn should_parse_decimal_types(copybook_str: &str, expected_type:DataTypeEnum) {
+    fn should_parse_decimal_types(copybook_str: &str, expected_type: DataTypeEnum) {
         let result = CopybookPestParser::parse(Rule::data_type, copybook_str);
         assert!(result.is_ok());
 

@@ -1,6 +1,6 @@
-//! A COBOL Copybook Data Type. COBOL primarily has three categories of data types.
-//! This enum captures those top level types and the additional meta data for each
-//! data type.
+//! A COBOL Copybook Data Type.
+//! This enum captures the top level types and the additional meta data as necessary for each data
+//! type.
 
 use lombok::AllArgsConstructor;
 #[derive(Debug, Clone, PartialEq)]
@@ -19,7 +19,6 @@ pub enum DataTypeEnum {
     // In COBOL these may be referenced as 9()V9(), 9().9(), or P()V()
     Decimal(Decimal),
 
-
     //TODO parse comp1,comp2, and comp3 types
     // The COMP-1 type stores a single-precision floating-point number in binary format. The
     // representation should be similiar to https://www.cs.cornell.edu/~tomf/notes/cps104/floating.html
@@ -35,7 +34,7 @@ pub enum DataTypeEnum {
     //  as a half a byte or a nibble. The sign is always stored in the right most nibble where
     // "1100" is positive and "1101" is negative. In a copybook this field type is typically
     // defined as 01 FIELDNAME PIC 9(n) COMP-3. The total byte size = ceil(n/2).
-    Comp3
+    Comp3,
 }
 
 // The data type sign identifies if a numerical data type is allowed to be negative or can only be positive.
@@ -107,7 +106,7 @@ pub struct Decimal {
     // of these fields depend on the character length provided (n and m) in the PIC clause and the
     // mapping utilized by the cobol compiler.
     //TODO parse this
-    isSimpleBinary: bool,
+    is_simple_binary: bool,
 }
 
 // The Number helps define the attributes required to understand and use a Cobol Number Field.
@@ -121,5 +120,5 @@ pub struct Number {
     // of these fields depend on the character length provided in the PIC clause and the mapping
     // utilized by the cobol compiler. Typically this mapping could be something like
     // n=1-4, size=2 bytes; n=5-9, size=4 bytes; n=10-18, size=8 bytes
-    isSimpleBinary: bool,
+    is_simple_binary: bool,
 }

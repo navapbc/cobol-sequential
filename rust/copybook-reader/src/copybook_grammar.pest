@@ -7,6 +7,10 @@ picture = _{
     "PIC"
 }
 
+comp = {
+    "COMP"
+}
+
 level = { 
     ASCII_DIGIT+ 
 }
@@ -29,10 +33,9 @@ data_type = {
     picture
     ~ whitespace+
     ~ (
-        alphabetic_type
-        | decimal_type
+        numeric_type
+        | alphabetic_type
         | alphanumeric_type
-        | numeric_type
     )
 }
 
@@ -74,23 +77,27 @@ alphanumeric_type = {
 }
 
 numeric_type = {
-    // numeric types can be signed by providing a S prefix, by default numeric types are unsigned.
     signed?
-    // Numeric types are identified with a 9 but since the length_literal rule needs the
-    // 9 to operate correctly we are not going to consume the character.
-    ~ &"9"
-    ~ length_literal
-}
 
-decimal_type = {
-    // decimal types can be signed by providing a S prefix, by default decimal types are unsigned.
-    signed?
-    // the decimal must match one of the formats below
     ~ (
         implied_decimal_point
         | assumed_decimal_point_left
         | assumed_decimal_point_right
+        | number_type
     )
+
+    // The COMP clause can optionally be provided on a numeric type
+    ~ (
+        whitespace+
+        ~ comp
+    )?
+}
+
+number_type = {
+    // Numeric types are identified with a 9 but since the length_literal rule needs the
+    // 9 to operate correctly we are not going to consume the character.
+    &"9"
+    ~ length_literal
 }
 
 // Implied Decimal points indicate the exact position of the decimal with either a
