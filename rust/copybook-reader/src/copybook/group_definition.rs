@@ -113,12 +113,14 @@ mod tests {
         let original = GroupDefinition::create_with_statements(
             1u32,
             String::from("GROUP"),
-            vec![StatementDefinition::FieldDefinition(FieldDefinition::new_with_count(
-                2u32,
-                String::from("ONE"),
-                5u32,
-                DataTypeEnum::AlphaNumeric,
-            ))],
+            vec![StatementDefinition::FieldDefinition(
+                FieldDefinition::new_with_count(
+                    2u32,
+                    String::from("ONE"),
+                    5u32,
+                    DataTypeEnum::AlphaNumeric,
+                ),
+            )],
         );
 
         assert_eq!(original, original.clone());
@@ -129,12 +131,14 @@ mod tests {
         let first = GroupDefinition::create_with_statements(
             1u32,
             String::from("GROUP"),
-            vec![StatementDefinition::FieldDefinition(FieldDefinition::new_with_count(
-                2u32,
-                String::from("ONE"),
-                5u32,
-                DataTypeEnum::AlphaNumeric,
-            ))],
+            vec![StatementDefinition::FieldDefinition(
+                FieldDefinition::new_with_count(
+                    2u32,
+                    String::from("ONE"),
+                    5u32,
+                    DataTypeEnum::AlphaNumeric,
+                ),
+            )],
         );
 
         let second = GroupDefinition::create_with_statements(
@@ -164,23 +168,27 @@ mod tests {
         let first = GroupDefinition::create_with_statements(
             1u32,
             String::from("GROUP"),
-            vec![StatementDefinition::FieldDefinition(FieldDefinition::new_with_count(
-                2u32,
-                String::from("ONE"),
-                5u32,
-                DataTypeEnum::AlphaNumeric,
-            ))],
+            vec![StatementDefinition::FieldDefinition(
+                FieldDefinition::new_with_count(
+                    2u32,
+                    String::from("ONE"),
+                    5u32,
+                    DataTypeEnum::AlphaNumeric,
+                ),
+            )],
         );
 
         let second = GroupDefinition::create_with_statements(
             1u32,
             String::from("GROUP"),
-            vec![StatementDefinition::FieldDefinition(FieldDefinition::new_with_count(
-                5u32, // different level
-                String::from("ONE"),
-                5u32,
-                DataTypeEnum::AlphaNumeric,
-            ))],
+            vec![StatementDefinition::FieldDefinition(
+                FieldDefinition::new_with_count(
+                    5u32, // different level
+                    String::from("ONE"),
+                    5u32,
+                    DataTypeEnum::AlphaNumeric,
+                ),
+            )],
         );
 
         assert_ne!(first, second);

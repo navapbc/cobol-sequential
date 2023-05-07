@@ -290,12 +290,14 @@ mod tests {
         match parse_result {
             Ok(copybook_definition) => {
                 let expected_copybook = copybook::CopybookDefinition::create_with_statements(vec![
-                    copybook::StatementDefinition::FieldDefinition(copybook::FieldDefinition::new_with_count(
-                        1u32,
-                        String::from("FIELDNAME"),
-                        5u32,
-                        DataTypeEnum::AlphaNumeric,
-                    )),
+                    copybook::StatementDefinition::FieldDefinition(
+                        copybook::FieldDefinition::new_with_count(
+                            1u32,
+                            String::from("FIELDNAME"),
+                            5u32,
+                            DataTypeEnum::AlphaNumeric,
+                        ),
+                    ),
                 ]);
                 assert_eq!(copybook_definition, expected_copybook);
             }

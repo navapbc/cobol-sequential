@@ -84,13 +84,13 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (Option<u3
                 Rule::number_type => {
                     let length_literal_pair = decimal_or_number_pair.into_inner().next().unwrap();
                     let length = length_literal_rule_into_u32(length_literal_pair);
-                    return (
+                    (
                         Some(length),
                         DataTypeEnum::Number(copybook::data_type::Number::new(
                             sign_enum,
                             is_simple_binary,
                         )),
-                    );
+                    )
                 }
                 Rule::implied_decimal_point => {
                     let mut decimal_point_type_inner = decimal_or_number_pair.into_inner();
@@ -100,7 +100,7 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (Option<u3
                     let right =
                         length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
 
-                    return (
+                    (
                         Some(left + right),
                         DataTypeEnum::Decimal(Decimal::new(
                             sign_enum,
@@ -108,7 +108,7 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (Option<u3
                             left,
                             is_simple_binary,
                         )),
-                    );
+                    )
                 }
                 Rule::assumed_decimal_point_left => {
                     let mut decimal_point_type_inner = decimal_or_number_pair.into_inner();
@@ -118,7 +118,7 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (Option<u3
                     let right =
                         length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
 
-                    return (
+                    (
                         Some(right),
                         DataTypeEnum::Decimal(Decimal::new(
                             sign_enum,
@@ -126,7 +126,7 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (Option<u3
                             left,
                             is_simple_binary,
                         )),
-                    );
+                    )
                 }
                 Rule::assumed_decimal_point_right => {
                     let mut decimal_point_type_inner = decimal_or_number_pair.into_inner();
@@ -136,7 +136,7 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (Option<u3
                     let right =
                         length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
 
-                    return (
+                    (
                         Some(left),
                         DataTypeEnum::Decimal(Decimal::new(
                             sign_enum,
@@ -144,7 +144,7 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (Option<u3
                             right,
                             is_simple_binary,
                         )),
-                    );
+                    )
                 }
                 _ => unreachable!("Undefined numeric type in rule parser"),
             }
@@ -167,9 +167,9 @@ fn inner_data_type_rule_into_sign_enum(pair_inner_iter: &mut Pairs<Rule>) -> Sig
         Some(first_pair) => {
             if first_pair.as_rule() == Rule::signed {
                 pair_inner_iter.next();
-                return SignEnum::SIGNED;
+                SignEnum::SIGNED
             } else {
-                return SignEnum::UNSIGNED;
+                SignEnum::UNSIGNED
             }
         }
         None => SignEnum::UNSIGNED,
