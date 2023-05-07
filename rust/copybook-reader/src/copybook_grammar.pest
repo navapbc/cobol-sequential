@@ -11,6 +11,14 @@ comp = {
     "COMP"
 }
 
+comp1_type = {
+    "COMP-1"
+}
+
+comp2_type = {
+    "COMP-2"
+}
+
 level = { 
     ASCII_DIGIT+ 
 }
@@ -30,12 +38,17 @@ label = {
 }
 
 data_type = {
-    picture
-    ~ whitespace+
-    ~ (
-        numeric_type
-        | alphabetic_type
-        | alphanumeric_type
+    comp1_type
+    | comp2_type
+    | (
+        picture
+        ~ whitespace+
+        ~ (
+            comp3_type
+            | numeric_type
+            | alphabetic_type
+            | alphanumeric_type
+        )
     )
 }
 
@@ -98,6 +111,15 @@ number_type = {
     // 9 to operate correctly we are not going to consume the character.
     &"9"
     ~ length_literal
+}
+
+comp3_type = {
+    // The COMP-3 type is a special type of binary number type so it looks similar to the number
+    // type but does not have as much flexibility as the rest of the numeric types
+    &"9"
+    ~ length_literal
+    ~ whitespace+
+    ~ "COMP-3"
 }
 
 // Implied Decimal points indicate the exact position of the decimal with either a

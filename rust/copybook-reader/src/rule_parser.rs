@@ -21,12 +21,7 @@ fn field_rule_into_definition(field_rule: Pair<Rule>, level: u32) -> copybook::F
     let data_type_rule = inner_field_rules.next().unwrap();
     let length_and_data_type = data_type_rule_into_length_and_type(data_type_rule);
 
-    copybook::FieldDefinition::new_with_count(
-        level,
-        label,
-        length_and_data_type.0,
-        length_and_data_type.1,
-    )
+    copybook::FieldDefinition::new(level, label, length_and_data_type.0, length_and_data_type.1)
 }
 
 fn length_literal_rule_into_u32(length_literal_pair: Pair<Rule>) -> u32 {
@@ -54,7 +49,7 @@ fn length_literal_rule_into_u32(length_literal_pair: Pair<Rule>) -> u32 {
     }
 }
 
-fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, DataTypeEnum) {
+fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (Option<u32>, DataTypeEnum) {
     // The data_type rule should always contain 1 inner rule that identifies the actual type
     // and carries extra information about that specific data type in subtype
     let subtype_pair = data_type_pair.into_inner().next().unwrap();
@@ -68,7 +63,7 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
             let length_literal_pair = subtype_inner.next().unwrap();
             let length = length_literal_rule_into_u32(length_literal_pair);
 
-            (length, DataTypeEnum::Alphabetic)
+            (Some(length), DataTypeEnum::Alphabetic)
         }
         Rule::alphanumeric_type => {
             let mut subtype_inner = subtype_pair.into_inner();
@@ -76,7 +71,7 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
             let length_literal_pair = subtype_inner.next().unwrap();
             let length = length_literal_rule_into_u32(length_literal_pair);
 
-            (length, DataTypeEnum::AlphaNumeric)
+            (Some(length), DataTypeEnum::AlphaNumeric)
         }
         Rule::numeric_type => {
             let is_simple_binary = inner_data_type_rule_has_comp(subtype_pair.clone());
@@ -89,13 +84,13 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                 Rule::number_type => {
                     let length_literal_pair = decimal_or_number_pair.into_inner().next().unwrap();
                     let length = length_literal_rule_into_u32(length_literal_pair);
-                    (
-                        length,
+                    return (
+                        Some(length),
                         DataTypeEnum::Number(copybook::data_type::Number::new(
                             sign_enum,
                             is_simple_binary,
                         )),
-                    )
+                    );
                 }
                 Rule::implied_decimal_point => {
                     let mut decimal_point_type_inner = decimal_or_number_pair.into_inner();
@@ -105,15 +100,15 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                     let right =
                         length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
 
-                    (
-                        left + right,
+                    return (
+                        Some(left + right),
                         DataTypeEnum::Decimal(Decimal::new(
                             sign_enum,
                             DecimalTypeEnum::ImpliedPoint,
                             left,
                             is_simple_binary,
                         )),
-                    )
+                    );
                 }
                 Rule::assumed_decimal_point_left => {
                     let mut decimal_point_type_inner = decimal_or_number_pair.into_inner();
@@ -123,15 +118,15 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                     let right =
                         length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
 
-                    (
-                        right,
+                    return (
+                        Some(right),
                         DataTypeEnum::Decimal(Decimal::new(
                             sign_enum,
                             DecimalTypeEnum::AssumedPointLeft,
                             left,
                             is_simple_binary,
                         )),
-                    )
+                    );
                 }
                 Rule::assumed_decimal_point_right => {
                     let mut decimal_point_type_inner = decimal_or_number_pair.into_inner();
@@ -141,18 +136,25 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (u32, Data
                     let right =
                         length_literal_rule_into_u32(decimal_point_type_inner.next().unwrap());
 
-                    (
-                        left,
+                    return (
+                        Some(left),
                         DataTypeEnum::Decimal(Decimal::new(
                             sign_enum,
                             DecimalTypeEnum::AssumedPointRight,
                             right,
                             is_simple_binary,
                         )),
-                    )
+                    );
                 }
                 _ => unreachable!("Undefined numeric type in rule parser"),
             }
+        }
+        Rule::comp1_type => (None, DataTypeEnum::Comp1),
+        Rule::comp2_type => (None, DataTypeEnum::Comp2),
+        Rule::comp3_type => {
+            let length_literal_pair = subtype_pair.into_inner().next().unwrap();
+            let length = length_literal_rule_into_u32(length_literal_pair);
+            (Some(length), DataTypeEnum::Comp3)
         }
         _ => unreachable!("Undefined data type rule in rule parser"),
     }
@@ -236,6 +238,9 @@ pub fn map_rule_to_name(rule: &Rule) -> &'static str {
         Rule::assumed_decimal_point_left => "assumed_decimal_point_left",
         Rule::assumed_decimal_point_right => "assumed_decimal_point_right",
         Rule::comp => "comp",
+        Rule::comp1_type => "comp1_type",
+        Rule::comp2_type => "comp2_type",
+        Rule::comp3_type => "comp3_type",
         Rule::signed => "signed",
         Rule::field => "field",
         Rule::group => "group",
@@ -301,7 +306,8 @@ mod tests {
         "PIC 9(3)V9(2)",
         "PIC 9(1).9(5)",
         "PIC P(3)9(2)",
-        "PIC 9(2)P(3)"
+        "PIC 9(2)P(3)",
+        "PIC 9(7) COMP-3",
     }, expected_length = {
         2u32,
         3u32,
@@ -314,7 +320,8 @@ mod tests {
         5u32,
         6u32,
         2u32,
-        2u32
+        2u32,
+        7u32,
     })]
     fn should_parse_lengths(copybook_str: &str, expected_length: u32) {
         let result = CopybookPestParser::parse(Rule::data_type, copybook_str);
@@ -322,7 +329,7 @@ mod tests {
 
         let data_type_pair = result.unwrap().next().unwrap();
         let length_and_type = data_type_rule_into_length_and_type(data_type_pair);
-        assert_eq!(length_and_type.0, expected_length);
+        assert_eq!(length_and_type.0.unwrap(), expected_length);
     }
 
     #[parameterized(copybook_str = {
@@ -363,6 +370,24 @@ mod tests {
         DataTypeEnum::Decimal(Decimal::new(SignEnum::UNSIGNED,  DecimalTypeEnum::AssumedPointRight, 3u32, true)),
     })]
     fn should_parse_decimal_types(copybook_str: &str, expected_type: DataTypeEnum) {
+        let result = CopybookPestParser::parse(Rule::data_type, copybook_str);
+        assert!(result.is_ok());
+
+        let data_type_pair = result.unwrap().next().unwrap();
+        let length_and_type = data_type_rule_into_length_and_type(data_type_pair);
+        assert_eq!(length_and_type.1, expected_type);
+    }
+
+    #[parameterized(copybook_str = {
+        "COMP-1",
+        "COMP-2",
+        "PIC 9(3) COMP-3",
+    }, expected_type = {
+        DataTypeEnum::Comp1,
+        DataTypeEnum::Comp2,
+        DataTypeEnum::Comp3,
+    })]
+    fn should_parse_comp_types(copybook_str: &str, expected_type: DataTypeEnum) {
         let result = CopybookPestParser::parse(Rule::data_type, copybook_str);
         assert!(result.is_ok());
 
