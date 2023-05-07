@@ -91,7 +91,7 @@ impl fmt::Display for GroupDefinition {
             self.get_label()
         );
         for statement in self.get_statements() {
-            let _ = writeln!(f, "{}", statement);
+            let _ = writeln!(f, "  {}", statement);
         }
         write!(
             f,

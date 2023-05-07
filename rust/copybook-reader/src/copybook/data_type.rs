@@ -2,6 +2,8 @@
 //! This enum captures the top level types and the additional meta data as necessary for each data
 //! type.
 
+use std::fmt;
+
 use lombok::AllArgsConstructor;
 #[derive(Debug, Clone, PartialEq)]
 pub enum DataTypeEnum {
@@ -34,6 +36,15 @@ pub enum DataTypeEnum {
     // "1100" is positive and "1101" is negative. In a copybook this field type is typically
     // defined as 01 FIELDNAME PIC 9(n) COMP-3. The total byte size = ceil(n/2).
     Comp3,
+}
+
+impl fmt::Display for DataTypeEnum {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // The debug trait for an enum will display a lot of extra info than the display trait
+        // needs when an enum variant is a struct. So to avoid that we are extracting only the
+        // enum variant name which comes before the first "(".
+        write!(f, "{}", format!("{:?}", self).split("(").next().unwrap())
+    }
 }
 
 // The data type sign identifies if a numerical data type is allowed to be negative or can only be positive.

@@ -50,7 +50,7 @@ impl fmt::Display for CopybookDefinition {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let _ = writeln!(f, "CopybookDefinition:");
         for group in self.get_statements() {
-            let _ = writeln!(f, "{}", group);
+            let _ = writeln!(f, "  {}", group);
         }
         writeln!(f)
     }

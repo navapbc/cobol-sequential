@@ -14,8 +14,8 @@ fn get_copybook_directory() -> String {
 #[parameterized(filename = {
     "one_group_field.cpy",
     "one_field.cpy",
+    "types.cpy",
     // FIXME: These copybooks are not yet supported
-    // "types.cpy",
     // "complex.cpy",
     // "line_numbers.cpy",
     // "program.cbl"

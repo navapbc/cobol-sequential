@@ -7,6 +7,14 @@ picture = _{
     "PIC"
 }
 
+signed = {
+    "S" | "s"
+}
+
+precision = {
+    "P" | "p"
+}
+
 comp = {
     "COMP"
 }
@@ -78,14 +86,14 @@ length_literal = {
 alphabetic_type = {
     // alphanumeric types always start with A but since the length_literal rule needs the
     // A to operate correctly we are not going to consume the character.
-    &"A"
+    & ("A" | "a")
     ~ length_literal
 }
 
 alphanumeric_type = {
     // alphanumeric types always start with X but since the length_literal rule needs the
     // X to operate correctly we are not going to consume the character.
-    &"X"
+    & ("X" | "x")
     ~ length_literal
 }
 
@@ -127,7 +135,7 @@ comp3_type = {
 implied_decimal_point = {
     &"9"
     ~ length_literal
-    ~ ("V" | ".")
+    ~ ("V" | "v" | ".")
     ~ &"9"
     ~ length_literal
 }
@@ -135,7 +143,7 @@ implied_decimal_point = {
 // Assumed decimal point left always has a position length literal on the left such as
 // P(2)9(3) or PP9(3).
 assumed_decimal_point_left = {
-    &"P"
+    & precision
     ~ length_literal
     ~ &"9"
     ~ length_literal
@@ -146,12 +154,8 @@ assumed_decimal_point_left = {
 assumed_decimal_point_right = {
     &"9"
     ~ length_literal
-    ~ &"P"
+    ~ & precision
     ~ length_literal
-}
-
-signed = {
-    "S"
 }
 
 field = {

@@ -53,9 +53,6 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (Option<u3
     // The data_type rule should always contain 1 inner rule that identifies the actual type
     // and carries extra information about that specific data type in subtype
     let subtype_pair = data_type_pair.into_inner().next().unwrap();
-    let subtype_span = subtype_pair.as_span();
-    println!("subtype pair: {:?}", subtype_pair);
-    println!("subtype span: {:?}", subtype_span);
     match subtype_pair.as_rule() {
         Rule::alphabetic_type => {
             let mut subtype_inner = subtype_pair.into_inner();
@@ -237,6 +234,7 @@ pub fn map_rule_to_name(rule: &Rule) -> &'static str {
         Rule::implied_decimal_point => "implied_decimal_point",
         Rule::assumed_decimal_point_left => "assumed_decimal_point_left",
         Rule::assumed_decimal_point_right => "assumed_decimal_point_right",
+        Rule::precision => "precision",
         Rule::comp => "comp",
         Rule::comp1_type => "comp1_type",
         Rule::comp2_type => "comp2_type",

@@ -5,9 +5,9 @@
            05 ALPHA-PAREN PIC a(3).
            05 ALPHA-NUM PIC xxxx.
            05 ALPHA-NUM-PAREN PIC x(4).
-           05 DECIMAL PIC 9(2)v9(3). *> can store .175
-           05 SIGNED-NUM PIC s9(2). *> examples -76
-           05 ASSUMED-DECIMAL PIC p9. *> .6
+           05 DECIMAL PIC 9(2)v9(3).
+           05 SIGNED-NUM PIC s9(2).
+           05 ASSUMED-DECIMAL PIC p9.
            05 PICTURE-ALPHA PIC X(10).
            05 PICTURE-CHAR PIC X.
            05 PICTURE-NUM PIC 9(2).
@@ -16,3 +16,4 @@
            05 PIC-DECIMAL PIC 9(6)V9(2).
            05 EXPLICIT-DECIMAL PIC 9(6).9(2).
            05 PIC-DECIMAL PIC S9(6)V9(2).
+           05 COMP-2-FIELD COMP-2.

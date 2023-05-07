@@ -65,12 +65,12 @@ impl fmt::Display for FieldDefinition {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "FieldDefinition level={}, label={}, char_count={}",
+            "FieldDefinition level={}, label={}, char_count={}, type={}",
             self.get_level(),
             self.get_label(),
             self.get_maybe_char_count()
                 .map_or(String::from("null"), |count| count.to_string()),
-            //FIXME: implement display attribute for datatype
+            self.get_data_type(), //FIXME: implement display attribute for datatype
         )
     }
 }
