@@ -14,13 +14,6 @@ pub struct FieldDefinition {
     // The Field's label is defined by the copybook and used to reference the field.
     label: String,
 
-    //TODO NOTES - maybe add this to the PR as references
-    //  - cobol data types: https://www.tutorialspoint.com/cobol/cobol_data_types.htm
-    //  - comp clause: https://www.techagilist.com/mainframe/usage-comp-declaration/
-    //  - decimal point: https://www.mainframestechhelp.com/tutorials/cobol/assumed-decimal-point-data-type.htm
-    //  - sign overpunch: https://support.hpe.com/hpesc/public/docDisplay?docId=c02258569&docLocale=en_US
-    //  - floating types: https://www.cs.cornell.edu/~tomf/notes/cps104/floating.html
-
     // The total character length of the field as specified by the copybook. This should not be
     // treated as the byte-length of the field, although, in most cases it is the same. There are
     // some binary encoded fields that do not have a character length and others that do not
