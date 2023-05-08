@@ -18,7 +18,7 @@ pub struct FieldDefinition {
     // treated as the byte-length of the field, although, in most cases it is the same. There are
     // some binary encoded fields that do not have a character length and others that do not
     // have a one-to-one mapping between character length and byte length where they are not the same.
-    maybe_char_count: Option<u32>,
+    char_count_option: Option<u32>,
 
     // The data type for the field.
     data_type: DataTypeEnum,
@@ -34,7 +34,7 @@ impl FieldDefinition {
         FieldDefinition {
             level,
             label,
-            maybe_char_count,
+            char_count_option: maybe_char_count,
             data_type,
         }
     }
@@ -47,7 +47,7 @@ impl fmt::Display for FieldDefinition {
             "FieldDefinition level={}, label={}, char_count={}, type={}",
             self.get_level(),
             self.get_label(),
-            self.get_maybe_char_count()
+            self.get_char_count_option()
                 .map_or(String::from("null"), |count| count.to_string()),
             self.get_data_type(),
         )

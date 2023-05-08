@@ -73,10 +73,29 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (Option<u3
             (Some(length), DataTypeEnum::AlphaNumeric)
         }
         Rule::numeric_type => {
-            let is_simple_binary = inner_data_type_rule_has_comp(subtype_pair.clone());
+            // Some PIC data types are allowed to have a COMP clause, if it does have a
+            // COMP clause then this numeric type is stored in binary
+            let is_simple_binary = subtype_pair
+                .clone()
+                .into_inner()
+                .find(|numeric_sub_pair| numeric_sub_pair.as_rule() == Rule::comp)
+                .map_or(false, |_| true);
 
             let mut subtype_inner = subtype_pair.into_inner();
-            let sign_enum = inner_data_type_rule_into_sign_enum(&mut subtype_inner);
+
+            // Peeks at the first item in the iterable to determine the Sign.
+            // If a sign was explicitly specifies it moves the iterable forward.
+            let sign_enum = match subtype_inner.peek() {
+                Some(first_pair) => {
+                    if first_pair.as_rule() == Rule::signed {
+                        subtype_inner.next();
+                        SignEnum::SIGNED
+                    } else {
+                        SignEnum::UNSIGNED
+                    }
+                }
+                None => SignEnum::UNSIGNED,
+            };
 
             let decimal_or_number_pair = subtype_inner.next().unwrap();
             match decimal_or_number_pair.as_rule() {
@@ -159,31 +178,6 @@ fn data_type_rule_into_length_and_type(data_type_pair: Pair<Rule>) -> (Option<u3
     }
 }
 
-// Peeks at the first item in the Pairs Iterable to determine the Sign. If a sign was explicitly
-// specifies it moves the iterable forward.
-fn inner_data_type_rule_into_sign_enum(pair_inner_iter: &mut Pairs<Rule>) -> SignEnum {
-    match pair_inner_iter.peek() {
-        Some(first_pair) => {
-            if first_pair.as_rule() == Rule::signed {
-                pair_inner_iter.next();
-                SignEnum::SIGNED
-            } else {
-                SignEnum::UNSIGNED
-            }
-        }
-        None => SignEnum::UNSIGNED,
-    }
-}
-
-fn inner_data_type_rule_has_comp(sub_data_type: Pair<Rule>) -> bool {
-    // Some PIC data types are allowed to have a COMP clause, this method searches for the
-    // clause and returns true if it exists or false if it does not
-    sub_data_type
-        .into_inner()
-        .find(|numeric_sub_pair| numeric_sub_pair.as_rule() == Rule::comp)
-        .map_or(false, |_| true)
-}
-
 fn group_rule_into_definition(group: Pair<Rule>, level: u32) -> copybook::GroupDefinition {
     let mut inner_group_rules = group.into_inner();
 
@@ -264,7 +258,7 @@ mod tests {
 
         assert_eq!(*field_definition.get_level(), 1u32);
         assert_eq!(field_definition.get_label(), "FIELDNAME");
-        assert_eq!(field_definition.get_maybe_char_count().unwrap(), 5u32);
+        assert_eq!(field_definition.get_char_count_option().unwrap(), 5u32);
 
         let data_type = field_definition.get_data_type();
         match data_type {
