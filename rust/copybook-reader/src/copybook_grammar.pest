@@ -1,7 +1,38 @@
 whitespace = _{ " " }
 
+picture = _{
+    // In Cobol Picture clauses are used to define the attributes of the data type.
+    // This is a silent rule because although it identifies a data type clause it does
+    // not provide actual value to the CopybookDefinition structure.
+    "PIC"
+}
+
+signed = {
+    "S" | "s"
+}
+
+precision = {
+    "P" | "p"
+}
+
+comp = {
+    "COMP"
+}
+
+comp1_type = {
+    "COMP-1"
+}
+
+comp2_type = {
+    "COMP-2"
+}
+
 level = { 
     ASCII_DIGIT+ 
+}
+
+integer = {
+    ASCII_DIGIT+
 }
 
 label = {
@@ -15,7 +46,116 @@ label = {
 }
 
 data_type = {
-    "PIC " ~ ASCII_ALPHANUMERIC+ ~ "(" ~ ASCII_DIGIT ~ ")"
+    comp1_type
+    | comp2_type
+    | (
+        picture
+        ~ whitespace+
+        ~ (
+            comp3_type
+            | numeric_type
+            | alphabetic_type
+            | alphanumeric_type
+        )
+    )
+}
+
+// This rule is meant to match patterns in the copybook such as "9(2)", "99", or "X(4)" in such a
+// way that if the parenthesis form is used the integer length value can be extracted or if the
+// repeated 9 or X form is used the number of repetitions can be extracted. This rule is not meant
+// to identify whether a 9, X, or V clause is being used that must be matched before this rule
+// without making progress with the & terminal.
+length_literal = {
+    // match the first character and push it onto the stack to be referenced later
+    PUSH(ASCII_ALPHANUMERIC)
+    ~ (
+        // Matches the parenthesis form which is expected to contain an integer value.
+        (
+            "("
+            ~ integer
+            ~ ")"
+        )
+        // Matches the repeated form such as 9999
+        | ( PEEK* )
+    )
+    // Since the character is not needed outside of this rule we are going to drop it from the
+    // stack to be safe. Dropped stack characters are not required to be matched.
+    ~ DROP
+}
+
+alphabetic_type = {
+    // alphanumeric types always start with A but since the length_literal rule needs the
+    // A to operate correctly we are not going to consume the character.
+    & ("A" | "a")
+    ~ length_literal
+}
+
+alphanumeric_type = {
+    // alphanumeric types always start with X but since the length_literal rule needs the
+    // X to operate correctly we are not going to consume the character.
+    & ("X" | "x")
+    ~ length_literal
+}
+
+numeric_type = {
+    signed?
+
+    ~ (
+        implied_decimal_point
+        | assumed_decimal_point_left
+        | assumed_decimal_point_right
+        | number_type
+    )
+
+    // The COMP clause can optionally be provided on a numeric type
+    ~ (
+        whitespace+
+        ~ comp
+    )?
+}
+
+number_type = {
+    // Numeric types are identified with a 9 but since the length_literal rule needs the
+    // 9 to operate correctly we are not going to consume the character.
+    &"9"
+    ~ length_literal
+}
+
+comp3_type = {
+    // The COMP-3 type is a special type of binary number type so it looks similar to the number
+    // type but does not have as much flexibility as the rest of the numeric types
+    &"9"
+    ~ length_literal
+    ~ whitespace+
+    ~ "COMP-3"
+}
+
+// Implied Decimal points indicate the exact position of the decimal with either a
+// "V" or a ".". So these typically look like 9(2)V(3) or 9(3).(2)
+implied_decimal_point = {
+    &"9"
+    ~ length_literal
+    ~ ("V" | "v" | ".")
+    ~ &"9"
+    ~ length_literal
+}
+
+// Assumed decimal point left always has a position length literal on the left such as
+// P(2)9(3) or PP9(3).
+assumed_decimal_point_left = {
+    & precision
+    ~ length_literal
+    ~ &"9"
+    ~ length_literal
+}
+
+// Assumed decimal point right always has a position length literal on the right such as
+// 9(3)P(2) or 9(3)PP.
+assumed_decimal_point_right = {
+    &"9"
+    ~ length_literal
+    ~ & precision
+    ~ length_literal
 }
 
 field = {

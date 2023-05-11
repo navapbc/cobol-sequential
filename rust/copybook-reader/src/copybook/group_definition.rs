@@ -84,27 +84,19 @@ impl Clone for GroupDefinition {
 
 impl fmt::Display for GroupDefinition {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let _ = writeln!(
-            f,
-            "GroupDefinition level={}, label={}:",
-            self.get_level(),
-            self.get_label()
-        );
-        for statement in self.get_statements() {
-            let _ = writeln!(f, "{}", statement);
-        }
         write!(
             f,
-            "GroupDefinition End level={} label={}",
+            "GroupDefinition level={}, label={}, statements={}",
             self.get_level(),
-            self.get_label()
+            self.get_label(),
+            self.get_statements().len()
         )
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::copybook::FieldDefinition;
+    use crate::copybook::{DataTypeEnum, FieldDefinition};
 
     use super::*;
 
@@ -116,7 +108,8 @@ mod tests {
             vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
                 2u32,
                 String::from("ONE"),
-                String::from("PIC X(5)"),
+                Some(5u32),
+                DataTypeEnum::AlphaNumeric,
             ))],
         );
 
@@ -131,7 +124,8 @@ mod tests {
             vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
                 2u32,
                 String::from("ONE"),
-                String::from("PIC X(5)"),
+                Some(5u32),
+                DataTypeEnum::AlphaNumeric,
             ))],
         );
 
@@ -142,12 +136,14 @@ mod tests {
                 StatementDefinition::FieldDefinition(FieldDefinition::new(
                     2u32,
                     String::from("ONE"),
-                    String::from("PIC X(5)"),
+                    Some(5u32),
+                    DataTypeEnum::AlphaNumeric,
                 )),
                 StatementDefinition::FieldDefinition(FieldDefinition::new(
                     2u32,
                     String::from("TWO"),
-                    String::from("PIC X(5)"),
+                    Some(5u32),
+                    DataTypeEnum::AlphaNumeric,
                 )),
             ],
         );
@@ -163,7 +159,8 @@ mod tests {
             vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
                 2u32,
                 String::from("ONE"),
-                String::from("PIC X(5)"),
+                Some(5u32),
+                DataTypeEnum::AlphaNumeric,
             ))],
         );
 
@@ -173,7 +170,8 @@ mod tests {
             vec![StatementDefinition::FieldDefinition(FieldDefinition::new(
                 5u32, // different level
                 String::from("ONE"),
-                String::from("PIC X(5)"),
+                Some(5u32),
+                DataTypeEnum::AlphaNumeric,
             ))],
         );
 

@@ -1,4 +1,4 @@
-use crate::{rule_parser::map_rule_to_name, Rule};
+use crate::Rule;
 use pest::error::Error;
 use std::fmt;
 
@@ -58,8 +58,8 @@ impl CopybookParseError {
                 negatives: _,
             } => positives
                 .iter()
-                .map(map_rule_to_name)
-                .collect::<Vec<&str>>()
+                .map(Rule::to_string)
+                .collect::<Vec<String>>()
                 .join(","),
             pest::error::ErrorVariant::CustomError { message } => message.to_string(),
         };

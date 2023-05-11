@@ -74,12 +74,14 @@ mod rule_parser;
 ///             StatementDefinition::FieldDefinition(FieldDefinition::new(
 ///                 2u32,
 ///                 String::from("FIRST-FIELD"),
-///                 String::from("PIC X(5)"),
+///                 Some(5u32),
+///                 DataTypeEnum::AlphaNumeric,
 ///             )),
 ///             StatementDefinition::FieldDefinition(FieldDefinition::new(
 ///                 2u32,
 ///                 String::from("SECOND-FIELD"),
-///                 String::from("PIC X(5)"),
+///                 Some(5u32),
+///                 DataTypeEnum::AlphaNumeric,
 ///             )),
 ///         ],
 ///     )),
@@ -275,6 +277,8 @@ fn place_new_group(
 
 #[cfg(test)]
 mod tests {
+    use crate::copybook::DataTypeEnum;
+
     use super::*;
 
     use test_log::test;
@@ -289,7 +293,8 @@ mod tests {
                     copybook::StatementDefinition::FieldDefinition(copybook::FieldDefinition::new(
                         1u32,
                         String::from("FIELDNAME"),
-                        String::from("PIC X(5)"),
+                        Some(5u32),
+                        DataTypeEnum::AlphaNumeric,
                     )),
                 ]);
                 assert_eq!(copybook_definition, expected_copybook);
@@ -320,14 +325,16 @@ mod tests {
                                     copybook::FieldDefinition::new(
                                         5u32,
                                         String::from("FIRSTFIELD"),
-                                        String::from("PIC X(5)"),
+                                        Some(5u32),
+                                        DataTypeEnum::AlphaNumeric,
                                     ),
                                 ),
                                 copybook::StatementDefinition::FieldDefinition(
                                     copybook::FieldDefinition::new(
                                         5u32,
                                         String::from("SECONDFIELD"),
-                                        String::from("PIC X(5)"),
+                                        Some(5u32),
+                                        DataTypeEnum::AlphaNumeric,
                                     ),
                                 ),
                             ],
@@ -368,14 +375,16 @@ mod tests {
                                     copybook::FieldDefinition::new(
                                         5u32,
                                         String::from("FIRSTFIELD"),
-                                        String::from("PIC X(5)"),
+                                        Some(5u32),
+                                        DataTypeEnum::AlphaNumeric,
                                     ),
                                 ),
                                 copybook::StatementDefinition::FieldDefinition(
                                     copybook::FieldDefinition::new(
                                         5u32,
                                         String::from("SECONDFIELD"),
-                                        String::from("PIC X(5)"),
+                                        Some(5u32),
+                                        DataTypeEnum::AlphaNumeric,
                                     ),
                                 ),
                                 copybook::StatementDefinition::GroupDefinition(
@@ -386,7 +395,8 @@ mod tests {
                                             copybook::FieldDefinition::new(
                                                 10u32,
                                                 String::from("THIRDFIELD"),
-                                                String::from("PIC X(1)"),
+                                                Some(1u32),
+                                                DataTypeEnum::AlphaNumeric,
                                             ),
                                         )],
                                     ),
@@ -395,7 +405,8 @@ mod tests {
                                     copybook::FieldDefinition::new(
                                         5u32,
                                         String::from("FOURTHFIELD"),
-                                        String::from("PIC X(1)"),
+                                        Some(1u32),
+                                        DataTypeEnum::AlphaNumeric,
                                     ),
                                 ),
                             ],
@@ -409,7 +420,8 @@ mod tests {
                                 copybook::FieldDefinition::new(
                                     5u32,
                                     String::from("FIFTHFIELD"),
-                                    String::from("PIC X(9)"),
+                                    Some(9u32),
+                                    DataTypeEnum::AlphaNumeric,
                                 ),
                             )],
                         ),
@@ -499,7 +511,8 @@ mod tests {
                                 copybook::FieldDefinition::new(
                                     5u32,
                                     String::from("FIRSTFIELD"),
-                                    String::from("PIC X(5)"),
+                                    Some(5u32),
+                                    DataTypeEnum::AlphaNumeric,
                                 ),
                             )],
                         ),
